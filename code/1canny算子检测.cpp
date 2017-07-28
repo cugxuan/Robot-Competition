@@ -32,7 +32,7 @@ int main()
         cout << "图像加载成功!" << endl << endl;
 
     //高斯滤波
-     GaussianBlur(srcImage, srcImage, Size(3, 3), 0, 0, BORDER_DEFAULT);
+    GaussianBlur(srcImage, srcImage, Size(3, 3), 0, 0, BORDER_DEFAULT);
     cvtColor(srcImage, grayImage, COLOR_BGR2GRAY);
 
     namedWindow("原图像", WINDOW_AUTOSIZE);

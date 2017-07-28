@@ -1,12 +1,14 @@
 #include <iostream>
-#include "cv.h"
-#include "cxcore.h"
-#include "highgui.h"
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv/cv.h>
+
 using namespace std;
 int main()
 {
     CvMemStorage *storage = cvCreateMemStorage(0);   // 内存存储序列
-    IplImage *img = cvLoadImage("/1.png", 0);
+    IplImage *img = cvLoadImage("/1.png", 0);  //-1默认读原通道，0灰度图，1彩图
     IplImage *imgColor = cvCreateImage(cvGetSize(img), 8, 3);
     IplImage *contoursImage = cvCreateImage(cvGetSize(img), 8, 1);
 
