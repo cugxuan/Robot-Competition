@@ -20,7 +20,7 @@ void CannyThreshold(int, void*);
 
 int main()
 {
-    srcImage = imread("/home/xuan/Robot-Competition/2.png");
+    srcImage = imread("/2.png");
 
     //判断图像是否加载成功
     if(srcImage.empty())

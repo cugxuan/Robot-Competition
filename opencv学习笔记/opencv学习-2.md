@@ -30,3 +30,20 @@ if (backGroundFlag){
     backGroundFlag = false;
 }
 ```
+
+## 重要基本数据结构
+
+### CvPoint
+使用(CvPoint*)cvGetSeqElem(lines,i)的到对应的指针.   
+在`4检测直线.cpp`中的画线方法
+```C++
+for( i = 0; i < lines->total; i++ )
+{
+    CvPoint* line = (CvPoint*)cvGetSeqElem(lines,i);
+    cvLine( color_dst, line[0], line[1], CV_RGB(255,0,0), 3, CV_AA, 0 );
+	//color_dst图像类型,line[0],line[1]线段的两个端点CvPoint类型,
+	//CV_RGB(255,0,0)线段的颜色,彩图有效.3(thickness)线的粗细程度
+	//line_type线段类型,CV_AA为线段,8为(8邻接)连接线,4同理.
+	//0坐标点的小数点位数
+}
+```

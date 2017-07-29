@@ -15,6 +15,6 @@ tags:
 4. [OpenCV中寻找轮廓函数cvFindContours的使用说明以及序列cvSeq的用法说明](http://blog.csdn.net/augusdi/article/details/9000276)
 5. [RGB坐标像素的储存和提取](http://blog.csdn.net/wenhao_ir/article/details/51554530)
 6. [opencv 连通区域边界坐标提取](http://blog.csdn.net/fei13148687/article/details/46225243)
-7. []()
+7. [OpenCV霍夫变换：霍夫线变换，霍夫圆变换合辑](http://blog.csdn.net/poem_qianmo/article/details/26977557)
 8. []()
 9. []()
