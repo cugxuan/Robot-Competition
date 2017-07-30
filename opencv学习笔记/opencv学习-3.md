@@ -3,8 +3,26 @@
 
 在进行颜色识别的时候对于蓝色的情况
 得到的BGR图的
-## 高斯过滤
+---
 
+## 高斯过滤
+### 简介
+高斯滤波是一种线性平滑滤波，适用于消除高斯噪声，广泛应用于图像处理的减噪过程。通俗的讲，高斯滤波就是对整幅图像进行加权平均的过程，每一个像素点的值，都由其本身和邻域内的其他像素值经过加权平均后得到。高斯滤波的具体操作是：用一个模板（或称卷积、掩模）扫描图像中的每一个像素，用模板确定的邻域内像素的加权平均灰度值去替代模板中心像素点的值。  
+### 函数分析
+`void GaussianBlur(InputArray src,OutputArray dst, Size ksize, double sigmaX, double sigmaY=0, intborderType=BORDER_DEFAULT )`
+- 第一个参数，InputArray类型的src，输入图像，即源图像，填Mat类的对象即可。它可以是单独的任意通道数的图片，但需要注意，图片深度应该为CV_8U,CV_16U, CV_16S, CV_32F 以及 CV_64F之一。
+- 第二个参数，OutputArray类型的dst，即目标图像，需要和源图片有一样的尺寸和类型。比如可以用Mat::Clone，以源图片为模板，来初始化得到如假包换的目标图。
+- 第三个参数，Size类型的ksize高斯内核的大小。其中ksize.width和ksize.height可以不同，但他们都必须为**正数和奇数**。或者，它们可以是零的，它们都是由sigma计算而来。
+- 第四个参数，double类型的sigmaX，表示高斯核函数在X方向的的标准偏差。
+- 第五个参数，double类型的sigmaY，表示高斯核函数在Y方向的的标准偏差。若sigmaY为零，就将它设为sigmaX，如果sigmaX和sigmaY都是0，那么就由ksize.width和ksize.height计算出来。
+为了结果的正确性着想，最好是把第三个参数Size，第四个参数sigmaX和第五个参数sigmaY全部指定到。
+- 第六个参数，int类型的borderType，用于推断图像外部像素的某种边界模式。有默认值BORDER_DEFAULT，我们一般不去管它。
+
+**使用样例:**  
+在`1canny算子检测.cpp`中使用了高斯滤波  
+`GaussianBlur(srcImage, srcImage, Size(3, 3), 0, 0, BORDER_DEFAULT);`
+
+---
 ## canny算子求边缘
 > 教程链接:[Canny算子,Sobel算子,Laplace算子,Scharr滤波器合辑](http://blog.csdn.net/poem_qianmo/article/details/25560901)
 
@@ -34,6 +52,7 @@ Canny边缘检测算子是John F.Canny于 1986 年开发出来的一个多级边
        imshow("【效果图】Canny边缘检测", src);
 ```
 
+---
 ## cvHoughLines2()函数寻找直线
 利用Hough变换在二值图像中寻找直线。
 >对于opencv的霍夫变换讲解:[教程](http://blog.csdn.net/poem_qianmo/article/details/26977557)  
@@ -71,3 +90,5 @@ Hough 变换变量，是下面变量的其中之一：
 ```C++
     lines = cvHoughLines2( dst, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180, 50, 50, 10 );
 ```
+
+该函数的返回值保存在一个CvSeq内.
