@@ -27,7 +27,7 @@ void init(int T)
 {//进行图片的初始化
     originImg=cvLoadImage(filename[T]);
     cvShowImage("原图", originImg);
-    cvWaitKey(0);
+//    cvWaitKey(0);
 }
 void Gau()
 {//对originImg进行高斯过滤
@@ -46,8 +46,31 @@ void thres()
     cvShowImage("灰化高斯", temp);
     //分配thrImg空间，并且二值化
     thrImg=cvCreateImage(cvGetSize(originImg), 8, 1);
-    cvThreshold(gaussImg, thrImg, 128, 255, CV_THRESH_BINARY);
+    cvThreshold(temp, thrImg, 200, 255, CV_THRESH_BINARY);
     cvShowImage("二值化结果", thrImg);
+}
+void filter()
+{//将寻找的二值轮廓放到thrImg
+    CvMemStorage* mem_storage = cvCreateMemStorage(0);
+    CvSeq *first_contour = NULL, *c = NULL;
+    cvFindContours(
+            thrImg,
+            mem_storage,
+            &first_contour,
+            sizeof(CvContour),
+            CV_RETR_TREE,       //old:CV_RETR_CCOMP,           //#1 需更改区域
+            CV_CHAIN_APPROX_NONE, cvPoint(0,0)
+            );
+    cvZero(thrImg);
+    cvDrawContours(
+        thrImg,
+        first_contour,
+        cvScalar(100),
+        cvScalar(100),
+        2            //old:1           //#2 需更改区域
+        );
+    cvShowImage("二值轮廓", thrImg);
+    cvClearMemStorage(mem_storage);
 }
 
 //-------二值化&寻找轮廓-------
@@ -59,6 +82,7 @@ void control()
         init(T);
         Gau();
         thres();
+        filter();
         cvWaitKey(0);
         T++;
     }
