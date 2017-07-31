@@ -22,6 +22,7 @@
 在`1canny算子检测.cpp`中使用了高斯滤波  
 `GaussianBlur(srcImage, srcImage, Size(3, 3), 0, 0, BORDER_DEFAULT);`
 
+注：使用IplImage*类型看这个[教程](http://blog.csdn.net/jackinzhou/article/details/7901253)
 ---
 ## canny算子求边缘
 > 教程链接:[Canny算子,Sobel算子,Laplace算子,Scharr滤波器合辑](http://blog.csdn.net/poem_qianmo/article/details/25560901)
@@ -90,5 +91,5 @@ Hough 变换变量，是下面变量的其中之一：
 ```C++
     lines = cvHoughLines2( dst, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180, 50, 50, 10 );
 ```
-
 该函数的返回值保存在一个CvSeq内.
+

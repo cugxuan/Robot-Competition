@@ -8,13 +8,16 @@ using namespace std;
 int main()
 {
     CvMemStorage *storage = cvCreateMemStorage(0);   // 内存存储序列
-    IplImage *img = cvLoadImage("/1.png", 0);  //-1默认读原通道，0灰度图，1彩图
+    IplImage *img = cvLoadImage("/h-1.png", 0);  //-1默认读原通道，0灰度图，1彩图
     IplImage *imgColor = cvCreateImage(cvGetSize(img), 8, 3);
     IplImage *contoursImage = cvCreateImage(cvGetSize(img), 8, 1);
 
+    cvShowImage("origin", img);
+
     CvSeq *contours = 0, *contoursTemp = 0;
     cvZero(contoursImage);
-    cvThreshold(img, img, 100, 255, CV_THRESH_BINARY);  // 二值化操作
+    cvThreshold(img, img, 200, 255, CV_THRESH_BINARY);  // 二值化操作
+    cvShowImage("thres", img);
     cvCvtColor(img, imgColor, CV_GRAY2BGR);
     int totals = cvFindContours(img, storage,&contours, sizeof(CvContour),    //img必须是一个二值图像 storage 用来存储的contours指向存储的第一个轮廓
         CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, cvPoint(0,0));
@@ -30,7 +33,8 @@ int main()
             cvSet2D(imgColor, pt->y, pt->x, cvScalar(0,0,255,0));
         }
         count ++;
-        CvSeq *InterCon = contoursTemp->v_next;     // 访问每个轮廓的纵向轮廓
+        CvSeq *InterCon = contoursTemp->v_next;// 访问每个轮廓的纵向轮廓
+        //画出countersImage图像中的轮廓
         for(; InterCon != 0; InterCon = InterCon ->h_next)
         {
             for(i = 0; i < InterCon->total; i++ )

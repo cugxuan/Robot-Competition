@@ -20,7 +20,8 @@ CvMemStorage* storage = 0;
 CvPoint pt[4];
 const char* wndname = "Square Detection Demo";
 
-// helper function:
+
+// pt0->pt1 和 pt0->pt2，找到向量之间的角度余弦
 // finds a cosine of angle between vectors
 // from pt0->pt1 and from pt0->pt2
 double angle( CvPoint* pt1, CvPoint* pt2, CvPoint* pt0 )
@@ -34,6 +35,7 @@ double angle( CvPoint* pt1, CvPoint* pt2, CvPoint* pt0 )
 
 // returns sequence of squares detected on the image.
 // the sequence is stored in the specified memory storage
+// 返回在图像上检测到的矩形序列。并且储存到storage中
 CvSeq* findSquares4( IplImage* img, CvMemStorage* storage )
 {
     CvSeq* contours;
@@ -190,7 +192,7 @@ void on_trackbar( int a )
         drawSquares( img, findSquares4( img, storage ) );
 }
 
-char* names[] = { "/1.png", "/2.png", 0 };
+char* names[] = { "/h-1.png", "/h-2.png", 0 };
 
 int main(int argc, char** argv)
 {

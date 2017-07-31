@@ -48,4 +48,12 @@ for( i = 0; i < lines->total; i++ )
 }
 ```
 
-##
+## cvSet2D()&&cvSetReal2D()
+对某个坐标点进行颜色的设置  
+cvSet2D()是对多通道的彩色图进行设置,cvSetReal2D()是对单通道图设置
+
+**使用样例:**
+```C++
+cvSetReal2D(contoursImage, pt->y, pt->x, 255.0);
+cvSet2D(imgColor, pt->y, pt->x, cvScalar(0, 255, 0, 0));  
+```
