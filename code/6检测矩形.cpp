@@ -22,8 +22,6 @@ const char* wndname = "Square Detection Demo";
 
 
 // pt0->pt1 和 pt0->pt2，找到向量之间的角度余弦
-// finds a cosine of angle between vectors
-// from pt0->pt1 and from pt0->pt2
 double angle( CvPoint* pt1, CvPoint* pt2, CvPoint* pt0 )
 {
     double dx1 = pt1->x - pt0->x;
@@ -33,15 +31,14 @@ double angle( CvPoint* pt1, CvPoint* pt2, CvPoint* pt0 )
     return (dx1*dx2 + dy1*dy2)/sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
 }
 
-// returns sequence of squares detected on the image.
-// the sequence is stored in the specified memory storage
+
 // 返回在图像上检测到的矩形序列。并且储存到storage中
 CvSeq* findSquares4( IplImage* img, CvMemStorage* storage )
 {
     CvSeq* contours;
     int i, c, l, N = 11;
     CvSize sz = cvSize( img->width & -2, img->height & -2 );
-    IplImage* timg = cvCloneImage( img ); // make a copy of input image
+    IplImage* timg = cvCloneImage( img );
     IplImage* gray = cvCreateImage( sz, 8, 1 );
     IplImage* pyr = cvCreateImage( cvSize(sz.width/2, sz.height/2), 8, 3 );
     IplImage* tgray;
@@ -56,6 +53,7 @@ CvSeq* findSquares4( IplImage* img, CvMemStorage* storage )
     cvSetImageROI( timg, cvRect( 0, 0, sz.width, sz.height ));
 
     // down-scale and upscale the image to filter out the noise
+    //缩小放大来过滤掉噪声
     cvPyrDown( timg, pyr, 7 );
     cvPyrUp( pyr, timg, 7 );
     tgray = cvCreateImage( sz, 8, 1 );
@@ -88,23 +86,20 @@ CvSeq* findSquares4( IplImage* img, CvMemStorage* storage )
                 cvThreshold( tgray, gray, (l+1)*255/N, 255, CV_THRESH_BINARY );
             }
 
+
             // find contours and store them all as a list
             cvFindContours( gray, storage, &contours, sizeof(CvContour),
                 CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0) );
 
-            // test each contour
+            //遍历每个轮廓
             while( contours )
             {
-                // approximate contour with accuracy proportional
-                // to the contour perimeter
+                // 使用近似轮廓精度与轮廓周长成比例
                 result = cvApproxPoly( contours, sizeof(CvContour), storage,
                     CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0 );
-                // square contours should have 4 vertices after approximation
-                // relatively large area (to filter out noisy contours)
-                // and be convex.
-                // Note: absolute value of an area is used because
-                // area may be positive or negative - in accordance with the
-                // contour orientation
+		//矩形轮廓在近似后有四个顶点
+		//相对较大的区域判断过滤掉噪声轮廓，并且是凸的
+		//注意：使用一个区域的绝对值，区域可能是正面或负面，按照轮廓方向
                 if( result->total == 4 &&
                     fabs(cvContourArea(result,CV_WHOLE_SEQ)) > 1000 &&
                     cvCheckContourConvexity(result) )
@@ -192,7 +187,7 @@ void on_trackbar( int a )
         drawSquares( img, findSquares4( img, storage ) );
 }
 
-char* names[] = { "/h-1.png", "/h-2.png", 0 };
+char* names[] = { "/h-1.png", "/2.png", 0 };
 
 int main(int argc, char** argv)
 {

@@ -12,7 +12,9 @@ IplImage* gaussImg;    //高斯过滤图像
 IplImage* thrImg;      //二值化图像
 IplImage* contourImg;  //轮廓图像
 
-char *filename[]={"/1.png","/2.png",0};
+CvMemStorage* mem_storage;
+CvSeq *first_contour = NULL, *c = NULL;
+char *filename[]={"/1.png",/*"/2.png",*/0};
 
 
 struct Countour{
@@ -48,11 +50,12 @@ void thres()
     thrImg=cvCreateImage(cvGetSize(originImg), 8, 1);
     cvThreshold(temp, thrImg, 200, 255, CV_THRESH_BINARY);
     cvShowImage("二值化结果", thrImg);
+    //清空临时图缓存
+    cvReleaseImage(&temp);
 }
 void filter()
 {//将寻找的二值轮廓放到thrImg
-    CvMemStorage* mem_storage = cvCreateMemStorage(0);
-    CvSeq *first_contour = NULL, *c = NULL;
+    mem_storage = cvCreateMemStorage(0);
     cvFindContours(
             thrImg,
             mem_storage,
@@ -70,11 +73,23 @@ void filter()
         2            //old:1           //#2 需更改区域
         );
     cvShowImage("二值轮廓", thrImg);
-    cvClearMemStorage(mem_storage);
 }
 
 //-------二值化&寻找轮廓-------
+//-------形状判断-------
 
+//-------形状判断-------
+
+//-------流程控制&释放内存-------
+void release()
+{
+    cvReleaseImage(&originImg);
+    cvReleaseImage(&gaussImg);
+    cvReleaseImage(&thrImg);
+    cvReleaseImage(&contourImg);
+
+    cvClearMemStorage(mem_storage);
+}
 void control()
 {//流程控制
     int T=0;
@@ -83,10 +98,12 @@ void control()
         Gau();
         thres();
         filter();
+        release();
         cvWaitKey(0);
         T++;
     }
 }
+//-------二值化&寻找轮廓-------
 
 int main()
 {
