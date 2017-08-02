@@ -13,12 +13,13 @@ IplImage* originImg;   //初始图像
 IplImage* gaussImg;    //高斯过滤图像
 IplImage* thrImg;      //二值化图像
 IplImage* contourImg;  //轮廓图像
+Mat originMat;         //Mat型原图
 
 CvMemStorage* mem_storage;
 CvSeq *first_contour = NULL, *c = NULL;
 CvPoint pt[4];
-char *filename[]={"/1.png",/*"/2.png",*/0};
-
+char *filename[]={/*"/1.png",*/"/2.png",0};
+const int colorRecgnize=190; //颜色识别的限度
 
 struct Countour{
     //圆形、正方形、长方形、椭圆形4种（ID依次为1, 2, 3, 4）
@@ -36,6 +37,7 @@ void init(int T)
 {//进行图片的初始化
     vecNum=0;
     originImg=cvLoadImage(filename[T]);
+    originMat=imread(filename[T]);
     cvShowImage("原图", originImg);
 //    cvWaitKey(0);
 }
@@ -138,18 +140,52 @@ void drawSquares( IplImage* img, CvSeq* squares )
 }
 //-------辅助形状判断,距离/角度-------
 
+//--------color test-------
+int getColor(int x,int y)
+{
+//    imshow("mat",originMat);
+    // 源图像载入及判断
+    if( !originMat.data )
+       return -1;
+    Mat tempImage = originMat.clone();
+    int watch[3],flag[3];
+    flag[0]=flag[1]=flag[2]=0;
+    for(int i=0;i<3;i++)
+        watch[i] = originMat.at<Vec3b>(x, y)[i];
+
+    for(int i=0;i<3;i++){
+        if(watch[i]>colorRecgnize)   //
+            flag[i]=1;
+    }//BGR蓝绿红
+
+    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0));
+    cvShowImage("yanse", originImg);
+    if(flag[0]==0&&flag[1]==1&&flag[2]==1){
+        return 3;//黄
+    }else if(flag[0]==1&&flag[1]==0&&flag[2]==0){
+        return 5;//蓝
+    }else if(flag[0]==0&&flag[1]==1&&flag[2]==0){
+        return 4;//绿
+    }else if(flag[0]==0&&flag[1]==0&&flag[2]==1){
+        return 2;//红
+    }else{
+        return 1;//黑
+    }
+}
+//--------color test-------
+
 //-------形状判断-------
 int checkRec(CvSeq *contours,CvSeq *&squares)
 {
     int i;
     double s,t;
     CvSeq* result;
-    if(0){//如果是图像框,则跳过
-        return 1;
-    }
     // 使用近似轮廓精度与轮廓周长成比例
     result = cvApproxPoly( contours, sizeof(CvContour), mem_storage,
         CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0 );
+    if(0){//如果是图像框,则跳过
+        return 1;
+    }
     // 矩形轮廓在近似后有四个顶点
     // 相对较大的区域判断过滤掉噪声轮廓，并且是凸的
     // 注意：使用一个区域的绝对值，区域可能是正面或负面，按照轮廓方向
@@ -198,8 +234,10 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
         VecCol[vecNum].S=sqrt(disA)*sqrt(disB);
         //计算中心点的位置
         CvPoint recCenter,mid,up;
-        VecCol[vecNum].X=recCenter.x=(temp[0]->x+temp[1]->x+temp[2]->x+temp[3]->x)/4;
-        VecCol[vecNum].Y=recCenter.y=(temp[0]->y+temp[1]->y+temp[2]->y+temp[3]->y)/4;
+//        VecCol[vecNum].X=recCenter.x=(temp[0]->x+temp[1]->x+temp[2]->x+temp[3]->x)/4.0;
+//        VecCol[vecNum].Y=recCenter.y=(temp[0]->y+temp[1]->y+temp[2]->y+temp[3]->y)/4.0;
+        VecCol[vecNum].X=recCenter.x=(temp[0]->x+temp[2]->x)/2.0;
+        VecCol[vecNum].Y=recCenter.y=(temp[0]->y+temp[2]->y)/2.0;
 
         //计算旋转角度
         mid.x=(temp[0]->x+temp[1]->x)/2;
@@ -213,8 +251,13 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
         else
             VecCol[vecNum].TH=90-ang;
         cout<<endl<<"angle::"<<ang<<endl;
-        vecNum++;
+
+//        VecCol[vecNum].ID[0]=getColor(104,76);
+
+        VecCol[vecNum].ID[0]=getColor(VecCol[vecNum].Y+10,VecCol[vecNum].X+10);
         //保存信息完成
+
+        vecNum++;
         return 1;   //是矩形或者正方形
     }
     return 0;     //不是矩形,进行下一个形状的检测
@@ -228,7 +271,6 @@ int checkRound(CvSeq *contours)
 void check()
 {//在已经提取好的thrImg二值轮廓中一一判断每个轮廓
     CvSeq* contours;
-
     mem_storage = cvCreateMemStorage(0);
     CvSeq* squares = cvCreateSeq( 0, sizeof(CvSeq), sizeof(CvPoint), mem_storage );
 
@@ -245,7 +287,6 @@ void check()
     //遍历每个轮廓
     while( contours )
     {
-
         if(checkRec(contours,squares)){
             cout<<"Rec"<<endl;  //该轮廓是矩形
 //            continue;
@@ -258,6 +299,19 @@ void check()
 //        drawSquares(  originImg,  squares );
 //        cvShowImage("draw", originImg);
 //        cvWaitKey(0);
+
+#if 0  //傻瓜过滤掉最后一个也就是图片外框
+        CvSeq *contemp;
+        contemp=contours;
+        contemp=contemp->h_next;
+        contemp=contemp->h_next;
+        if(contemp){
+            contemp=contemp->h_next;
+            contemp=contemp->h_next;
+            if(contemp==0)
+                break;
+        }
+#endif
         //两次去掉对称的情况
         contours = contours->h_next;
         contours = contours->h_next;
@@ -265,6 +319,9 @@ void check()
     cvClearMemStorage(mem_storage);
 }
 //-------形状判断-------
+
+
+
 
 //-------流程控制&释放内存-------
 void PrintC()
@@ -305,12 +362,12 @@ void control()
         check();
         PrintC();
         release();
-        
+
         cvWaitKey(0);
         T++;
     }
 }
-//-------二值化&寻找轮廓-------
+//-------流程控制&释放内存-------
 
 int main()
 {
