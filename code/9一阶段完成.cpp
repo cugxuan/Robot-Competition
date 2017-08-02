@@ -7,6 +7,7 @@
 
 using namespace std;
 using namespace cv;
+double PI=atan(1.0)*4;
 //-------变量定义--------
 IplImage* originImg;   //初始图像
 IplImage* gaussImg;    //高斯过滤图像
@@ -20,15 +21,20 @@ char *filename[]={"/1.png",/*"/2.png",*/0};
 
 
 struct Countour{
+    //圆形、正方形、长方形、椭圆形4种（ID依次为1, 2, 3, 4）
+    //可乐罐、口香糖、方便桶面、饼干盒4种（ID依次为81, 82, 83, 84）
+    //黑、红、黄、绿、蓝5种（ID依次为1, 2, 3, 4, 5）
     int ID[2];
     int X,Y,S;
-    int TH;   //识别物体朝向角
-};
+    double TH;   //识别物体朝向角
+}VecCol[15];
+int vecNum;
 //-------变量定义--------
 
 //-------初始化和高斯过滤-------
 void init(int T)
 {//进行图片的初始化
+    vecNum=0;
     originImg=cvLoadImage(filename[T]);
     cvShowImage("原图", originImg);
 //    cvWaitKey(0);
@@ -84,10 +90,10 @@ void filter()
 // pt0->pt1 和 pt0->pt2，找到向量之间的角度余弦
 double angle( CvPoint* pt1, CvPoint* pt2, CvPoint* pt0 )
 {
-    double dx1 = pt1->x - pt0->x;
-    double dy1 = pt1->y - pt0->y;
-    double dx2 = pt2->x - pt0->x;
-    double dy2 = pt2->y - pt0->y;
+    double dx1 = abs(pt1->x - pt0->x);
+    double dy1 = abs(pt1->y - pt0->y);
+    double dx2 = abs(pt2->x - pt0->x);
+    double dy2 = abs(pt2->y - pt0->y);
     return (dx1*dx2 + dy1*dy2)/sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
 }
 double getDistance(CvPoint *pt1,CvPoint *pt2)
@@ -138,6 +144,9 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
     int i;
     double s,t;
     CvSeq* result;
+    if(0){//如果是图像框,则跳过
+        return 1;
+    }
     // 使用近似轮廓精度与轮廓周长成比例
     result = cvApproxPoly( contours, sizeof(CvContour), mem_storage,
         CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0 );
@@ -173,12 +182,45 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
             for( i = 0; i < 4; i++ )
                 cvSeqPush( squares,
                     (CvPoint*)cvGetSeqElem( result, i ));
-        return 1;   //是矩形
+
+        //将信息保存到Vec数组中便于输出
+        //得到四个顶角的坐标
+        CvPoint *temp[5];
+        for(int i=0;i<4;i++)
+            temp[i]=(CvPoint*)cvGetSeqElem(result, i);
+        //计算两条边的长度,得到S
+        int disA=getDistance(temp[0],temp[1]);
+        int disB=getDistance(temp[1],temp[2]);
+        if(abs(disA-disB)<20)
+            VecCol[vecNum].ID[1]=2;  //正方形是2
+        else
+            VecCol[vecNum].ID[1]=3;  //长方形是3
+        VecCol[vecNum].S=sqrt(disA)*sqrt(disB);
+        //计算中心点的位置
+        CvPoint recCenter,mid,up;
+        VecCol[vecNum].X=recCenter.x=(temp[0]->x+temp[1]->x+temp[2]->x+temp[3]->x)/4;
+        VecCol[vecNum].Y=recCenter.y=(temp[0]->y+temp[1]->y+temp[2]->y+temp[3]->y)/4;
+
+        //计算旋转角度
+        mid.x=(temp[0]->x+temp[1]->x)/2;
+        mid.y=(temp[0]->y+temp[1]->y)/2;
+        up.x=mid.x,up.y=mid.y-20;
+
+        double ang=angle(temp[0],&up,&mid); //mid为要求角度
+        ang=180/PI*acos(ang);
+        if(ang>90)
+            VecCol[vecNum].TH=ang-90;
+        else
+            VecCol[vecNum].TH=90-ang;
+        cout<<endl<<"angle::"<<ang<<endl;
+        vecNum++;
+        //保存信息完成
+        return 1;   //是矩形或者正方形
     }
     return 0;     //不是矩形,进行下一个形状的检测
 }
 
-int checkRound()
+int checkRound(CvSeq *contours)
 {
     return 1;
 }
@@ -207,7 +249,7 @@ void check()
         if(checkRec(contours,squares)){
             cout<<"Rec"<<endl;  //该轮廓是矩形
 //            continue;
-        }else if(checkRound()){
+        }else if(checkRound(contours)){
             cout<<"Round"<<endl; //该轮廓是圆
 //            continue;
         }
@@ -225,6 +267,23 @@ void check()
 //-------形状判断-------
 
 //-------流程控制&释放内存-------
+void PrintC()
+{
+    if(vecNum==0){
+        cout<<"没有检测到形状"<<endl;
+        return ;
+    }else{
+        cout<<"检测到"<<vecNum<<"个物体"<<endl;
+        for(int i=0;i<vecNum;i++){
+            cout<<"第"<<i<<"轮廓为"<<endl;
+            cout<<"ID:"<<VecCol[i].ID[0]<<VecCol[i].ID[1]<<endl;
+            cout<<"X:"<<VecCol[i].X<<" Y:"<<VecCol[i].Y<<endl;
+            cout<<"S:"<<VecCol[i].S<<endl;
+            cout<<"angle:"<<VecCol[i].TH<<endl;
+        }
+    }
+}
+
 void release()
 {
     cvReleaseImage(&originImg);
@@ -242,8 +301,11 @@ void control()
         Gau();
         thres();
         filter();
+
         check();
+        PrintC();
         release();
+        
         cvWaitKey(0);
         T++;
     }

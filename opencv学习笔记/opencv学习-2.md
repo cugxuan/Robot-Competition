@@ -57,3 +57,11 @@ cvSet2D()是对多通道的彩色图进行设置,cvSetReal2D()是对单通道图
 cvSetReal2D(contoursImage, pt->y, pt->x, 255.0);
 cvSet2D(imgColor, pt->y, pt->x, cvScalar(0, 255, 0, 0));  
 ```
+
+## 通过三个点的坐标计算角度
+A(x1，y1)，B(x2，y2)，C(x3，y3),计算∠BAC
+向量AB=(x2-x1，y2-y1)
+向量AC=(x3-x1，y3-y1)
+AB*AC=|AB||AC|cos∠BAC=(x2-x1)(x3-x1)+(y2-y1)(y3-y1)
+于是，cos∠BAC=(AB*AC)/[|AB|*|AC|]
+计算得到的是
