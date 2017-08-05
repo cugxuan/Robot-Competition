@@ -18,7 +18,7 @@ Mat originMat;         //Mat型原图
 CvMemStorage* mem_storage;
 CvSeq *first_contour = NULL, *c = NULL;
 CvPoint pt[4];
-char *filename[]={/*"/1.png",*/"/2.png",0};
+char *filename[]={/*"/1.png","/2.png",*/"/h-5.png",/*"/2.png",*/0};
 const int colorRecgnize=190; //颜色识别的限度
 
 struct Countour{
@@ -194,6 +194,7 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
         cvCheckContourConvexity(result) )
     {
         s = 0;
+        cout<<endl;
         for(i=0;i<5;i++){
             CvPoint *pos=(CvPoint*)cvGetSeqElem(result, i);
             cout<<pos->x<<":"<<pos->y<<endl;
@@ -225,9 +226,9 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
         for(int i=0;i<4;i++)
             temp[i]=(CvPoint*)cvGetSeqElem(result, i);
         //计算两条边的长度,得到S
-        int disA=getDistance(temp[0],temp[1]);
-        int disB=getDistance(temp[1],temp[2]);
-        if(abs(disA-disB)<20)
+        double disA=getDistance(temp[0],temp[1]);
+        double disB=getDistance(temp[1],temp[2]);
+        if(abs(sqrt(disA)-sqrt(disB))<4)
             VecCol[vecNum].ID[1]=2;  //正方形是2
         else
             VecCol[vecNum].ID[1]=3;  //长方形是3
@@ -239,13 +240,18 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
         VecCol[vecNum].X=recCenter.x=(temp[0]->x+temp[2]->x)/2.0;
         VecCol[vecNum].Y=recCenter.y=(temp[0]->y+temp[2]->y)/2.0;
 
+        //可能有个bug.相同的剔除
+        for(int i=0;i<vecNum;i++){
+            if(VecCol[vecNum].X==VecCol[i].X&&VecCol[vecNum].Y==VecCol[i].Y)
+                return 1;
+        }
         //计算旋转角度
         mid.x=(temp[0]->x+temp[1]->x)/2;
         mid.y=(temp[0]->y+temp[1]->y)/2;
         up.x=mid.x,up.y=mid.y-20;
 
-        double ang=angle(temp[0],&up,&mid); //mid为要求角度
-        ang=180/PI*acos(ang);
+        double ang=angle(temp[0],&up,&mid); //mid为要求角度的点
+        ang=180/PI*acos(ang);     //进行余弦值转化角度值
         if(ang>90)
             VecCol[vecNum].TH=ang-90;
         else
@@ -287,7 +293,13 @@ void check()
     //遍历每个轮廓
     while( contours )
     {
-        if(checkRec(contours,squares)){
+        //判断轮廓的大小.过小的不要
+        if(fabs(cvContourArea(contours,CV_WHOLE_SEQ)) < 1000){
+            contours=contours->h_next;
+            continue;
+         }
+         //进行形状的判断
+         if(checkRec(contours,squares)){
             cout<<"Rec"<<endl;  //该轮廓是矩形
 //            continue;
         }else if(checkRound(contours)){
@@ -300,7 +312,7 @@ void check()
 //        cvShowImage("draw", originImg);
 //        cvWaitKey(0);
 
-#if 0  //傻瓜过滤掉最后一个也就是图片外框
+#if 1  //傻瓜过滤掉最后一个也就是图片外框
         CvSeq *contemp;
         contemp=contours;
         contemp=contemp->h_next;
@@ -314,7 +326,7 @@ void check()
 #endif
         //两次去掉对称的情况
         contours = contours->h_next;
-        contours = contours->h_next;
+//        contours = contours->h_next;
     }
     cvClearMemStorage(mem_storage);
 }

@@ -49,7 +49,7 @@ for( i = 0; i < lines->total; i++ )
 ```
 
 ## cvSet2D()&&cvSetReal2D()
-对某个坐标点进行颜色的设置  
+对某个坐标点进行颜色的设置,在学习调试的过程中可以非常方便地通过这个方法来查看点的位置.
 cvSet2D()是对多通道的彩色图进行设置,cvSetReal2D()是对单通道图设置
 
 **使用样例:**
@@ -59,9 +59,44 @@ cvSet2D(imgColor, pt->y, pt->x, cvScalar(0, 255, 0, 0));
 ```
 
 ## 通过三个点的坐标计算角度
-A(x1，y1)，B(x2，y2)，C(x3，y3),计算∠BAC
-向量AB=(x2-x1，y2-y1)
-向量AC=(x3-x1，y3-y1)
-AB*AC=|AB||AC|cos∠BAC=(x2-x1)(x3-x1)+(y2-y1)(y3-y1)
+已知A(x1，y1)，B(x2，y2)，C(x3，y3),计算∠BAC.  
+```
+向量AB=(x2-x1，y2-y1),向量AC=(x3-x1，y3-y1)
+AB*AC=|AB||AC|cos∠BAC
+     =(x2-x1)(x3-x1)+(y2-y1)(y3-y1)
 于是，cos∠BAC=(AB*AC)/[|AB|*|AC|]
-计算得到的是
+```
+计算得到的是余弦值,然后通过公式进行换算:  
+角度=180/π*acos(∠BAC)  
+在`第一阶段完成.cpp`中使用的转换余弦值的公式代码为:
+```C++
+double ang=angle(temp[0],&up,&mid); //mid为要求角度的点
+ang=180/PI*acos(ang);        //进行余弦值转化角度值
+```
+---
+## cvContourArea 计算轮廓面积
+>就是求的轮廓所占的面积.看这个就懂了.--->[解释](http://blog.csdn.net/wjq123000/article/details/52077961?locationNum=11&fps=1)
+
+**函数定义**:  
+`double cvContourArea( const CvArr* contour, CvSlice slice=CV_WHOLE_SEQ );`
+- contour：轮廓（顶点的序列或数组）。
+- slice：感兴趣区轮廓部分的起点和终点，默认计算整个轮廓的面积。
+**使用方法**:
+```C++
+if(fabs(cvContourArea(result,CV_WHOLE_SEQ)) > 1000)
+    //那么执行...
+```
+---
+## cvArcLength  计算轮廓周长
+**函数定义**:  
+`double cvArcLength( const void* curve, CvSlice slice=CV_WHOLE_SEQ, int is_closed=-1 );`
+- `curve`
+曲线点集序列或数组
+- `slice`
+曲线的起始点，缺省是计算整个曲线的长度
+- `is_closed`
+表示曲线是否闭合，有三种情况：
+  - is_closed=0 - 假设曲线不闭合
+  - is_closed>0 - 假设曲线闭合
+  - is_closed<0 - 若曲线是序列，检查 ((CvSeq*)curve)->flags 中的标识 CV_SEQ_FLAG_CLOSED 来确定曲线是否闭合。否则 (曲线由点集的数组 (CvMat*) 表示) 假设曲线不闭合。
+  

@@ -93,3 +93,33 @@ Hough 变换变量，是下面变量的其中之一：
 ```
 该函数的返回值保存在一个CvSeq内.
 
+
+### 霍夫圆变换HoughCircles
+[教程网址](http://b217dgy.blog.51cto.com/5704306/132036043)
+**函数定义**
+`CvSeq* cvHoughCircles( CvArr* image, void* circle_storage, int method, double dp, double min_dist, double param1=100, double param2=100, int min_radius=0, int max_radius=0 );`  
+**参数说明**:  
+`image`  
+输入 8-比特、单通道灰度图像.  
+`circle_storage`
+检测到的圆存储仓. 可以是内存存储仓 (此种情况下，一个线段序列在存储仓中被创建，并且由函数返回）或者是包含圆参数的特殊类型的具有单行/单列的CV_32FC3型矩阵(CvMat*). 矩阵头为函数所修改，使得它的 cols/rows 将包含一组检测到的圆。如果 circle_storage 是矩阵，而实际圆的数目超过矩阵尺寸，那么最大可能数目的圆被返回. 每个圆由三个浮点数表示：圆心坐标(x,y)和半径.  
+`method`  
+Hough 变换方式，目前只支持CV_HOUGH_GRADIENT, which is basically 21HT, described in [Yuen03].  
+`dp`  
+累加器图像的分辨率。这个参数允许创建一个比输入图像分辨率低的累加器。（这样做是因为有理由认为图像中存在的圆会自然降低到与图像宽高相同数量的范畴）。如果dp设置为1，则分辨率是相同的；如果设置为更大的值（比如2），累加器的分辨率受此影响会变小（此情况下为一半）。dp的值不能比1小。  
+Resolution of the accumulator used to detect centers of the circles. For example, if it is 1, the accumulator will have the same resolution as the input image, if it is 2 - accumulator will have twice smaller width and height, etc.  
+`min_dist`    
+该参数是让算法能明显区分的两个不同圆之间的最小距离。  
+Minimum distance between centers of the detected circles. If the parameter is too small, multiple neighbor circles may be falsely detected in addition to a true one. If it is too large, some circles may be missed.  
+`param1`  
+用于Canny的边缘阀值上限，下限被置为上限的一半。  
+The first method-specific parameter. In case of CV_HOUGH_GRADIENT it is the higher threshold of the two passed to Canny edge detector (the lower one will be twice smaller).  
+`param2`  
+累加器的阀值。  
+The second method-specific parameter. In case of CV_HOUGH_GRADIENT it is accumulator threshold at the center detection stage. The smaller it is, the more false circles may be detected. Circles, corresponding to the larger accumulator values, will be returned first.   
+`min_radius`  
+最小圆半径。  
+Minimal radius of the circles to search for.  
+`max_radius`  
+最大圆半径。  
+Maximal radius of the circles to search for. By default the maximal radius is set to max(image_width, image_height).  
