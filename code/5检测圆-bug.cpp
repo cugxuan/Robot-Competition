@@ -20,6 +20,22 @@ int main(int argc, char** argv)
     }
     cvNamedWindow( "circles", 1 );
     cvShowImage( "circles", img );
+
+//   另一种参数
+//    CvSeq* circles = cvHoughCircles( gray, storage, CV_HOUGH_GRADIENT, 2, gray->height/4, 200, 100 );
+//    int i;
+//     for( i = 0; i < circles->total; i++ )
+//     {
+//          float* p = (float*)cvGetSeqElem( circles, i );
+//          cvCircle( img, cvPoint(cvRound(p[0]),cvRound(p[1])), 3, CV_RGB(0,255,0), -1, 8, 0 );
+// cvCircle( img, cvPoint(cvRound(p[0]),cvRound(p[1])), cvRound(p[2]), CV_RGB(255,0,0), 3, 8, 0 );
+//          cout<<"圆心坐标x= "<<cvRound(p[0])<<endl<<"圆心坐标y= "<<cvRound(p[1])<<endl;
+//          cout<<"半径="<<cvRound(p[2])<<endl;
+//     }
+//     cout<<"圆数量="<<circles->total<<endl;
+//     cvNamedWindow( "circles", 1 );
+//     cvShowImage( "circles", img );
+
     cvWaitKey(0);
     return 0;
 }

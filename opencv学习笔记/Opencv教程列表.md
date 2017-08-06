@@ -26,7 +26,7 @@ tags:
 下一步方向::估计是轮廓特征.  (机器学习??)
 已经8.4了.没几天的时间了.还有学校集训.稍微转移重心做比赛.
 1. 很详细,轮廓处理方法-->[轮廓处理函数详细](http://www.verydemo.com/demo_c92_i143180.html)
-2. []()
+2. [使用Mat的opencv中的椭圆拟合](http://blog.csdn.net/suky520/article/details/18601307)
 3. []()
 4. []()
 
