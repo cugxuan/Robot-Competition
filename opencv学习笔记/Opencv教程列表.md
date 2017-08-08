@@ -27,9 +27,12 @@ tags:
 已经8.4了.没几天的时间了.还有学校集训.稍微转移重心做比赛.
 1. 很详细,轮廓处理方法-->[轮廓处理函数详细](http://www.verydemo.com/demo_c92_i143180.html)
 2. [使用Mat的opencv中的椭圆拟合](http://blog.csdn.net/suky520/article/details/18601307)
-3. []()
-4. []()
-
+3. [OpenCV画轮廓的外界圆矩形椭圆等](http://blog.csdn.net/augusdi/article/details/9000949#)
+4. [利用cvMinAreaRect2求取轮廓最小外接矩形](http://blog.csdn.net/fengbingchun/article/details/7069506)
+5. []()
+6. []()
+7. []()
+8. []()
 
 参考代码,,寻找方法
 ```C++

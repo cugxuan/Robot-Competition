@@ -18,7 +18,7 @@ Mat originMat;         //Mat型原图
 CvMemStorage* mem_storage;
 CvSeq *first_contour = NULL, *c = NULL;
 CvPoint pt[4];
-char *filename[]={/*"/1.png","/2.png",*/"/h-5.png",/*"/2.png",*/0};
+char *filename[]={"/1.png","/2.png","/h-5.png","/h-1.png",0};
 const int colorRecgnize=190; //颜色识别的限度
 
 struct Countour{
@@ -158,8 +158,8 @@ int getColor(int x,int y)
             flag[i]=1;
     }//BGR蓝绿红
 
-    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0));
-    cvShowImage("yanse", originImg);
+//    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0)); //绘制来查看检测点的位置
+//    cvShowImage("yanse", originImg);
     if(flag[0]==0&&flag[1]==1&&flag[2]==1){
         return 3;//黄
     }else if(flag[0]==1&&flag[1]==0&&flag[2]==0){
@@ -271,6 +271,103 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
 
 int checkRound(CvSeq *contours)
 {
+    mem_storage = cvCreateMemStorage(0);
+
+//    CvSeq* circles = cvHoughCircles (thrImg, mem_storage, CV_HOUGH_GRADIENT, 2, thrImg->width / 3, 300, 100, 0, 200);
+//    IplImage* color = cvCreateImage (cvGetSize(thrImg), IPL_DEPTH_8U, 3);
+//    cvCvtColor (thrImg, color, CV_GRAY2RGB);
+//    for (int i = 0; i < circles->total; i++)
+//    {
+//        float* p = (float*)cvGetSeqElem (circles, i);
+//        CvPoint pt = cvPoint (cvRound(p[0]), cvRound(p[1]));
+//        cvCircle (color, pt, cvRound(p[2]), CV_RGB(255, 0, 0), 3, 8, 0);
+
+
+////    cvLine( color, pt, line[1], CV_RGB(255,0,0), 3, 8 );//draw Radius
+//            //cvCircle (color, pt, , CV_RGB(255, 0, 0), 3, 4, 0);//draw Circle center
+//        cout<<"圆心坐标x= "<<cvRound(p[0])<<endl<<"圆心坐标y= "<<cvRound(p[1])<<endl;
+//        cout<<"半径="<<cvRound(p[2])<<endl;
+//    }
+//    cvShowImage( "circles", color );
+
+//    CvSeq* circles = cvHoughCircles( thrImg, mem_storage, CV_HOUGH_GRADIENT , 2,thrImg->width/10);
+//    int i;
+//    for( i = 0; i < circles->total; i++ )
+//    {
+//         float* p = (float*)cvGetSeqElem( circles, i );
+//         cvCircle( originImg, cvPoint(cvRound(p[0]),cvRound(p[1])), 3, CV_RGB(0,255,0), -1, 8, 0 );
+//         cvCircle( originImg, cvPoint(cvRound(p[0]),cvRound(p[1])), cvRound(p[2]), CV_RGB(255,0,0), 3, 8, 0 );
+//    }
+//    cvNamedWindow( "circles", 1 );
+//    cvShowImage( "circles", originImg );
+
+//-------------------------------------
+    if(contours->total<5){
+        contours=contours->v_next;
+//        continue;
+        return 1;
+    }
+
+    int c=contours->total;//当前轮廓包含多少个元素，这里的元素为点
+//    cout<<c<<endl;
+    double length = cvArcLength(contours); //得到指定的那个轮廓的周长
+    //该函数有3个参数：序列，起点（默认计算整条曲线），是否封闭曲线
+    double area = cvContourArea(contours);  //得到指定的那个轮廓的面积
+    CvRect rect = cvBoundingRect(contours,1);  //根据序列，返回轮廓外围矩形；
+    CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+
+    cout<<"Length = "<<length<<endl;
+    cout<<"Area = "<<area<<endl;
+
+    //外围矩形的顶点
+    CvPoint pt1,pt2;
+    pt1.x=rect.x;
+    pt1.y=rect.y;
+    pt2.x=rect.x+rect.width;
+    pt2.y=rect.y+rect.height;
+
+//        IplImage *dst = cvCreateImage(cvGetSize(src),8,3); //目标图像为3通道图
+//        cvZero(dst);
+    //使用红色给他画出轮廓
+    cvDrawContours(originImg,contours,CV_RGB(255,0,0),CV_RGB(255,0,0),0);
+    //使用绿色给他画出外界矩形
+    cvRectangle(originImg,pt1,pt2,CV_RGB(0,255,0));
+    //将图片显示
+    cvNamedWindow("dst",1);
+    cvShowImage("dst",originImg);
+
+    //根据序列找出最小面积外接圆
+    CvPoint2D32f center;
+    float radius;
+    int a=cvMinEnclosingCircle(contours,&center,&radius);
+
+    //圆必须是包含所有点，成功返回1，并且得到圆心和半径
+    cout<<"center.x = "<<center.x<<endl;
+    cout<<"center.y = "<<center.y<<endl;
+    cout<<"radius = "<<radius<<endl;
+
+    //画出最小外接圆，并显示
+    cvCircle(originImg,cvPointFrom32f(center),cvRound(radius),CV_RGB(100,100,100));
+    cvShowImage("dst",originImg);
+//    cvWaitKey();
+
+    //最小二乘法的椭圆拟合
+    CvBox2D ellipse = cvFitEllipse2(contours);
+    //用黄色在图上画椭圆,并显示
+    cvEllipseBox(originImg,ellipse,CV_RGB(255,255,0));
+    cvShowImage("dst",originImg);
+//    cvWaitKey();
+
+    //绘用蓝色制外接最小矩形
+    CvPoint2D32f pt[4];
+    cvBoxPoints(box,pt);
+    for(int i = 0;i<4;++i){
+        cvLine(originImg,cvPointFrom32f(pt[i]),cvPointFrom32f(pt[((i+1)%4)?(i+1):0]),CV_RGB(0,0,255));
+    }
+    cvShowImage("dst",originImg);
+//    cvWaitKey();
+   
+    cvClearMemStorage(mem_storage);
     return 1;
 }
 
@@ -293,12 +390,13 @@ void check()
     //遍历每个轮廓
     while( contours )
     {
-        //判断轮廓的大小.过小的不要
-        if(fabs(cvContourArea(contours,CV_WHOLE_SEQ)) < 1000){
+        //判断轮廓的大小.过小的不要,也可直接用contours->totals的大小判断
+        double s=fabs(cvContourArea(contours,CV_WHOLE_SEQ));
+        if( s< 100){
             contours=contours->h_next;
             continue;
          }
-         //进行形状的判断
+         //进行形状的判断k
          if(checkRec(contours,squares)){
             cout<<"Rec"<<endl;  //该轮廓是矩形
 //            continue;
@@ -370,8 +468,11 @@ void control()
         Gau();
         thres();
         filter();
-
+#if 1   //使用部分
         check();
+#else   //测试部分
+        checkRound(first_contour);
+#endif
         PrintC();
         release();
 

@@ -9,9 +9,10 @@
 
 顺序读取可通过调用宏 CV_READ_SEQ_ELEM( read_elem, reader )，逆序读取可通过调用宏CV_REV_READ_SEQ_ELEM( read_elem, reader )。这两个宏都将序列元素读进read_elem中， 并将指针移到下一个元素。下面代码显示了如何去使用reader 和 writer.
 
+---
 ### ApproxPoly函数
 用指定精度逼近多边形曲线  
-**函数定义** 
+**函数定义**  
 `CvSeq* cvApproxPoly( const void* src_seq, int header_size, CvMemStorage* storage,                       int method, double parameter, int parameter2=0 );`  
 **函数参数**  
 - `src_seq`  点集数组序列
@@ -29,3 +30,57 @@
     result = cvApproxPoly( contours, sizeof(CvContour), mem_storage,
         CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0 );
 ```
+
+---
+### cvFitEllipse2函数
+二维点集的椭圆拟合  
+**函数定义**  
+`CvBox2D cvFitEllipse2( const CvArr* points );`  
+**函数参数**  
+- `points`  点集的序列或数组  
+
+函数 cvFitEllipse 对给定的一组二维点集作椭圆的最佳拟合(最小二乘意义上的)。返回的结构与 cvEllipse 中的意义类似，除了 size表示椭圆轴的整个长度，而不是一半长度。
+
+---
+### cvBoundingRect函数
+计算点集的最外面（up-right）矩形边界  
+**函数定义**  
+`CvRect cvBoundingRect( CvArr* points, int update=0 );`  
+**函数参数**  
+- `points` ,二维点集，点的序列或向量 (CvMat)
+- `update` ,更新标识。下面是轮廓类型和标识的一些可能组合:
+  - update=0, contour ~ CvContour*: 不计算矩形边界，但直接由轮廓头的 rect 域得到。
+  - update=1, contour ~ CvContour*: 计算矩形边界，而且将结果写入到轮廓头的 rect 域中 header.
+  - update=0, contour ~ CvSeq* or CvMat*: 计算并返回边界矩形
+  - update=1, contour ~ CvSeq* or CvMat*: 产生运行错误 （runtime error is raised）
+
+函数 cvBoundingRect 返回二维点集的最外面 （up-right）矩形边界
+
+---
+### cvMinAreaRect2函数
+寻找最小面积的包围矩形
+**函数定义**  
+`CvBox2D  cvMinAreaRect2( const CvArr* points, CvMemStorage* storage=NULL ); `  
+**函数参数** 
+- `points` ,点序列或点集数组
+- `storage` ,可选的临时存储仓
+
+函数 cvMinAreaRect2 通过建立凸外形并且旋转外形以寻找给定 2D 点集的最小面积的包围矩形。其中返回的2D盒子定义如下：  
+```
+typedef struct CvBox2D 
+{ 
+    CvPoint2D32f center; /* 盒子的中心 */ 
+    CvSize2D32f size; /* 盒子的长和宽 */ 
+    float angle; /* 水平轴与第一个边的夹角，用弧度表示*/ 
+
+}CvBox2D; 
+```
+---
+### cvMinEnclosingCircle函数
+寻找最小包围的圆
+**函数定义**  
+`int cvMinEnclosingCircle(const CvArr * points,CvPoint2D32f * 	center,float * 	radius )`	
+**函数参数** 
+- `points` ,输入的轮廓序列
+- `center` ,返回的中心点坐标
+- `radius` ，放回的半径
