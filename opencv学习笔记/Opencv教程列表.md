@@ -29,7 +29,7 @@ tags:
 2. [使用Mat的opencv中的椭圆拟合](http://blog.csdn.net/suky520/article/details/18601307)
 3. [OpenCV画轮廓的外界圆矩形椭圆等](http://blog.csdn.net/augusdi/article/details/9000949#)
 4. [利用cvMinAreaRect2求取轮廓最小外接矩形](http://blog.csdn.net/fengbingchun/article/details/7069506)
-5. []()
+5. [输出HSV图像某个像素点的值](http://abyss2333.lofter.com/post/1d54e92e_7b51afa)
 6. []()
 7. []()
 8. []()

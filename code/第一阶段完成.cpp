@@ -272,35 +272,6 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
 int checkRound(CvSeq *contours)
 {
     mem_storage = cvCreateMemStorage(0);
-
-//    CvSeq* circles = cvHoughCircles (thrImg, mem_storage, CV_HOUGH_GRADIENT, 2, thrImg->width / 3, 300, 100, 0, 200);
-//    IplImage* color = cvCreateImage (cvGetSize(thrImg), IPL_DEPTH_8U, 3);
-//    cvCvtColor (thrImg, color, CV_GRAY2RGB);
-//    for (int i = 0; i < circles->total; i++)
-//    {
-//        float* p = (float*)cvGetSeqElem (circles, i);
-//        CvPoint pt = cvPoint (cvRound(p[0]), cvRound(p[1]));
-//        cvCircle (color, pt, cvRound(p[2]), CV_RGB(255, 0, 0), 3, 8, 0);
-
-
-////    cvLine( color, pt, line[1], CV_RGB(255,0,0), 3, 8 );//draw Radius
-//            //cvCircle (color, pt, , CV_RGB(255, 0, 0), 3, 4, 0);//draw Circle center
-//        cout<<"圆心坐标x= "<<cvRound(p[0])<<endl<<"圆心坐标y= "<<cvRound(p[1])<<endl;
-//        cout<<"半径="<<cvRound(p[2])<<endl;
-//    }
-//    cvShowImage( "circles", color );
-
-//    CvSeq* circles = cvHoughCircles( thrImg, mem_storage, CV_HOUGH_GRADIENT , 2,thrImg->width/10);
-//    int i;
-//    for( i = 0; i < circles->total; i++ )
-//    {
-//         float* p = (float*)cvGetSeqElem( circles, i );
-//         cvCircle( originImg, cvPoint(cvRound(p[0]),cvRound(p[1])), 3, CV_RGB(0,255,0), -1, 8, 0 );
-//         cvCircle( originImg, cvPoint(cvRound(p[0]),cvRound(p[1])), cvRound(p[2]), CV_RGB(255,0,0), 3, 8, 0 );
-//    }
-//    cvNamedWindow( "circles", 1 );
-//    cvShowImage( "circles", originImg );
-
 //-------------------------------------
     if(contours->total<5){
         contours=contours->v_next;

@@ -58,7 +58,7 @@
 
 ---
 ### cvMinAreaRect2函数
-寻找最小面积的包围矩形
+寻找最小面积的包围矩形  
 **函数定义**  
 `CvBox2D  cvMinAreaRect2( const CvArr* points, CvMemStorage* storage=NULL ); `  
 **函数参数** 
@@ -84,3 +84,17 @@ typedef struct CvBox2D
 - `points` ,输入的轮廓序列
 - `center` ,返回的中心点坐标
 - `radius` ，放回的半径
+
+---
+### FitLine函数
+2D 或 3D 点集的直线拟合  
+**函数定义**  
+`void   cvFitLine( const CvArr* points, int dist_type,double param,double reps, double aeps, float* line );`  
+**函数参数**  
+- `points`  ,2D 或 3D 点集，32-比特整数或浮点数坐标
+- `dist_type`  ,拟合的距离类型 （见讨论）.
+- `param`   ,对某些距离的数字参数，如果是 0， 则选择某些最优值
+- `reps, aeps`   ,半径 (坐标原点到直线的距离) 和角度的精度，一般设为0.01。
+- `line`   ,输出的直线参数。2D 拟合情况下，它是包含 4 个浮点数的数组 (vx, vy, x0, y0)，其中 (vx, vy) 是线的单位向量而 (x0, y0) 是线上的某个点. 对 3D 拟合，它是包含 6 个浮点数的数组 (vx, vy, vz, x0, y0, z0)， 其中 (vx, vy, vz) 是线的单位向量，而 (x0, y0, z0)是线上某点。
+
+函数 cvFitLine 通过求 sumiρ(ri) 的最小值方法，用 2D 或 3D 点集拟合直线，其中 ri是第 i 个点到直线的距离， ρ(r) 是下面的距离函数之一：
