@@ -91,41 +91,48 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
         //计算两条边的长度,得到S
         double disA=getDistance(temp[0],temp[1]);
         double disB=getDistance(temp[1],temp[2]);
-        if(abs(sqrt(disA)-sqrt(disB))<4)
-            VecCol[vecNum].ID[1]=2;  //正方形是2
-        else
-            VecCol[vecNum].ID[1]=3;  //长方形是3
-        VecCol[vecNum].S=sqrt(disA)*sqrt(disB);
+
         //计算中心点的位置
         CvPoint recCenter,mid,up;
 //        VecCol[vecNum].X=recCenter.x=(temp[0]->x+temp[1]->x+temp[2]->x+temp[3]->x)/4.0;
 //        VecCol[vecNum].Y=recCenter.y=(temp[0]->y+temp[1]->y+temp[2]->y+temp[3]->y)/4.0;
         VecCol[vecNum].X=recCenter.x=(temp[0]->x+temp[2]->x)/2.0;
         VecCol[vecNum].Y=recCenter.y=(temp[0]->y+temp[2]->y)/2.0;
+        VecCol[vecNum].S=sqrt(disA)*sqrt(disB);
 
         //可能有个bug.相同的剔除
         if(isExist(VecCol[vecNum].X,VecCol[vecNum].Y)){
             return 1;
         }
 
-        //计算旋转角度
-        mid.x=(temp[0]->x+temp[1]->x)/2;
-        mid.y=(temp[0]->y+temp[1]->y)/2;
-        up.x=mid.x,up.y=mid.y-20;
+        //区分，到这里还差ID和角度
+        int colortemp=isColorPure(VecCol[vecNum].X,VecCol[vecNum].Y);
+        if(colortemp==-1){  //如果有杂色说明是绿箭
+            VecCol[vecNum].ID[0]=8;
+            VecCol[vecNum].ID[1]=2;
+        }else if(abs(sqrt(disA)-sqrt(disB))<4){
+            VecCol[vecNum].ID[0]=colortemp;
+            VecCol[vecNum].ID[1]=2;  //正方形是2
+            //正方形单独计算角度
+            CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+            box.angle=abs(box.angle);  //把负角转正
+            box.center.x=1;
+            if(box.angle>45){
+                VecCol[vecNum].TH=-(90.0-box.angle);
+            }else{
+                VecCol[vecNum].TH=box.angle;
+            }
+            vecNum++;
+            return 1;
+        }else{
+                VecCol[vecNum].ID[0]=colortemp;
+                VecCol[vecNum].ID[1]=3;  //长方形是3
+        }
 
-        double ang=angle(temp[0],&up,&mid); //mid为要求角度的点
-        ang=180/PI*acos(ang);     //进行余弦值转化角度值
-        if(ang>90)
-            VecCol[vecNum].TH=ang-90;
-        else
-            VecCol[vecNum].TH=90-ang;
-        cout<<endl<<"angle::"<<ang<<endl;
-
-//        VecCol[vecNum].ID[0]=getColor(104,76);
-
-        VecCol[vecNum].ID[0]=getColor(VecCol[vecNum].Y+10,VecCol[vecNum].X+10);
+        //使用最小外接矩形算出绿箭和矩形的角度
+        CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+        VecCol[vecNum].TH=boxAngle(box);   //求出角度
         //保存信息完成
-
         vecNum++;
         return 1;   //是矩形或者正方形
     }
@@ -220,85 +227,102 @@ int checkRound(CvSeq *contours)
 
 
 
-    //通过颜色过滤奥利奥，最小外接圆和
+    //通过颜色过滤奥利奥，外接圆和最小外接椭圆面积基本相等
+    if(abs(calRadius-radius)<4&&abs(tempS-ellipse.size.height*ellipse.size.width/4.0)<30)
+    {//奥利奥的情况
+        //是否是杂色的情况
+        int colortemp=isColorPure(center.x,center.y);
+        if(colortemp==-1){
+            //说明是奥利奥，通过最小外接矩形来进行判断
 
-    //进行圆的判定
-    if(abs(calRadius-radius)<4){
-        if(isExist(center.x,center.y)){  //过滤掉逆时针的情况
+            CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+            if(isExist(box.center.x,box.center.y)){  //过滤掉逆时针的情况
+                return 1;
+            }
+
+            VecCol[vecNum].ID[0]=8;
+            VecCol[vecNum].ID[1]=4;
+            VecCol[vecNum].X=box.center.x;
+            VecCol[vecNum].Y=box.center.y;
+            VecCol[vecNum].S=box.size.height*box.size.width;
+            VecCol[vecNum].TH=boxAngle(box);
+            vecNum++;
+            return 1;
+        }else{    //进行圆的判定
+            if(isExist(center.x,center.y)){  //过滤掉逆时针的情况
+                return 1;
+            }
+            VecCol[vecNum].ID[0]=getColor(center.y,center.x);
+    //        cvSetReal2D(thrImg,center.y,center.x+25, 255.0);
+    //        cvShowImage("yanse", thrImg);
+            VecCol[vecNum].ID[1]=1;
+            VecCol[vecNum].X=center.x;
+            VecCol[vecNum].Y=center.y;
+            VecCol[vecNum].S=(2*calRadius)*(2*calRadius);
+            VecCol[vecNum].TH=0;
+            vecNum++;
             return 1;
         }
-
-
-        VecCol[vecNum].ID[0]=getColor(center.y,center.x);
-//        cvSetReal2D(thrImg,center.y,center.x+25, 255.0);
-//        cvShowImage("yanse", thrImg);
-        VecCol[vecNum].ID[1]=1;
-        VecCol[vecNum].X=center.x;
-        VecCol[vecNum].Y=center.y;
-        VecCol[vecNum].S=(2*calRadius)*(2*calRadius);
-        VecCol[vecNum].TH=0;
-        vecNum++;
-        return 1;
     }
-    //进行椭圆的判定
-    if(abs(tempS-ellipse.size.height*ellipse.size.width/4.0)<30){
+    //过滤掉了圆的情况，进行椭圆的判定
+    if(abs(calRadius-radius)>4&&abs(tempS-ellipse.size.height*ellipse.size.width/4.0)<30){
 //        cout<<"ellipse!!!"<<endl;
         if(isExist(ellipse.center.x,ellipse.center.y)){  //过滤掉逆时针的情况
             return 1;
         }
+        //如果是杂色，说明可能是可乐罐
+        int colortemp=isColorPure(ellipse.center.x,ellipse.center.y);
+        if(colortemp==-1){
+            CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+            if(abs(box.size.width/box.size.height)<0.6||abs(box.size.height/box.size.width)>1.6){
+                //说明是可乐瓶，按照最小外接矩形来做
+                VecCol[vecNum].ID[0]=8;
+                VecCol[vecNum].ID[1]=1;
+                VecCol[vecNum].X=box.center.x;
+                VecCol[vecNum].Y=box.center.y;
+                VecCol[vecNum].S=box.size.height*box.size.width;
+                VecCol[vecNum].TH=box.angle;
+                vecNum++;
+                return 1;
+            }
+        }else{
+            //椭圆的情况
+            CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
 
-        VecCol[vecNum].ID[0]=getColor(ellipse.center.y,ellipse.center.x);
-        VecCol[vecNum].ID[1]=4;
-        VecCol[vecNum].X=ellipse.center.x;
-        VecCol[vecNum].Y=ellipse.center.y;
-        VecCol[vecNum].S=tempS;
-        VecCol[vecNum].TH=ellipse.angle;
-        vecNum++;
-        return 1;
+            VecCol[vecNum].ID[0]=getColor(ellipse.center.y,ellipse.center.x);
+            VecCol[vecNum].ID[1]=4;
+            VecCol[vecNum].X=ellipse.center.x;
+            VecCol[vecNum].Y=ellipse.center.y;
+            VecCol[vecNum].S=tempS;
+            VecCol[vecNum].TH=boxAngle(box);
+            vecNum++;
+            return 1;
+        }
     }
-
-    return 1;
-
-//    CvRect rect = cvBoundingRect(contours,1);  //根据序列，返回轮廓外围矩形；
-//    CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
-
-//    cout<<"Length = "<<length<<endl;
-//    cout<<"Area = "<<areaS<<endl;
-
-//    //外围矩形的顶点
-//    CvPoint pt1,pt2;
-//    pt1.x=rect.x;
-//    pt1.y=rect.y;
-//    pt2.x=rect.x+rect.width;
-//    pt2.y=rect.y+rect.height;
-
-////        IplImage *dst = cvCreateImage(cvGetSize(src),8,3); //目标图像为3通道图
-////        cvZero(dst);
-//    //使用红色给他画出轮廓
-//    cvDrawContours(originImg,contours,CV_RGB(255,0,0),CV_RGB(255,0,0),0);
-//    //使用绿色给他画出外界矩形
-//    cvRectangle(originImg,pt1,pt2,CV_RGB(0,255,0));
-//    //将图片显示
-//    cvNamedWindow("dst",1);
-//    cvShowImage("dst",originImg);
-
-
-
-
-//    //绘用蓝色制外接最小矩形
-//    CvPoint2D32f pt[4];
-//    cvBoxPoints(box,pt);
-//    for(int i = 0;i<4;++i){
-//        cvLine(originImg,cvPointFrom32f(pt[i]),cvPointFrom32f(pt[((i+1)%4)?(i+1):0]),CV_RGB(0,0,255));
-//    }
-//    cvShowImage("dst",originImg);
-//    cvWaitKey();
+    //没有找到想要的图形，返回继续寻找
+    return 0;
 }
 
-
 int checkOthers(CvSeq *contours)
-{
+{//判断最后两种轮廓。可乐或方便面
+    //这里不对杂色进行检测。前面已经检测过了
 
+    //可乐瓶也是一个最小外接矩形进行处理，通过可乐瓶的长宽比进行区分两种
+    CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+    if(abs(box.size.width/box.size.height)<0.5||abs(box.size.height/box.size.width)>2){
+        //说明是可乐瓶，按照最小外接矩形来做
+        VecCol[vecNum].ID[0]=8;
+        VecCol[vecNum].ID[1]=1;
+        VecCol[vecNum].X=box.center.x;
+        VecCol[vecNum].Y=box.center.y;
+        VecCol[vecNum].S=box.size.height*box.size.width;
+        VecCol[vecNum].TH=box.angle;
+        vecNum++;
+        return 1;
+    }else{
+        //说明是方便面，
+    }
+    return 1;
 }
 
 void check()

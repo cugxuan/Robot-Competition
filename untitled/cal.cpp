@@ -79,6 +79,18 @@ void drawSquares( IplImage* img, CvSeq* squares )
     cvShowImage( "picture", cpy );
     cvReleaseImage( &cpy );
 }
+float boxAngle(CvBox2D box)
+{
+    if(box.size.width>box.size.height){
+        //说明角度是正的
+        return -box.angle;
+    }else{
+        //否则角度是负的
+        box.angle=-(90+box.angle);
+        return box.angle;
+    }
+}
+
 //-------辅助形状判断,距离/角度-------
 
 //--------color test-------
@@ -146,8 +158,52 @@ void dfs()
 //    return 0;
 //}
 
+int isColorPure(int x,int y)
+{//传值按照x，y
+    int color[16];
+    int test[6]={0,1,2,3,4,5};
+    int test_count[6]={0};
+    int final_color;
+
+    color[0]=getColor(y+9,x);
+    color[1]=getColor(y+6,x+6);
+    color[2]=getColor(y,x+9);
+    color[3]=getColor(y-6,x+6);
+    color[4]=getColor(y-9,x);
+    color[5]=getColor(y-6,x-6);
+    color[6]=getColor(y,x-9);
+    color[7]=getColor(y+6,x-6);
+
+    color[8]=getColor(y+18,x);
+    color[9]=getColor(y+13,x+12);
+    color[10]=getColor(y,x+18);
+    color[11]=getColor(y-13,x+12);
+    color[12]=getColor(y-18,x);
+    color[13]=getColor(y-13,x-12);
+    color[14]=getColor(y,x-18);
+    color[15]=getColor(y+13,x-12);
+    for(int i=0;i<6;i++)
+    {
+        for(int j=0;j<16;j++)
+        {
+           if(test[i]==color[j])
+               test_count[i]++;
+        }
+    }
+    for(int k=0;k<6;k++)
+    {
+        if(test_count[k]>14)
+        {
+            final_color=test[k];
+            break;
+        }
+        else final_color=-1;
+    }
+    return final_color;
+}
+
 int getColor(int x,int y)
-{
+{//传值按照y，x
 //    imshow("mat",originMat);
     // 源图像载入及判断
     if( !originMat.data )
@@ -163,6 +219,8 @@ int getColor(int x,int y)
             flag[i]=1;
     }//BGR蓝绿红
 
+    cvSetReal2D(thrImg, x, y, 255.0);
+    cvShowImage("colorJudge", thrImg);
 //    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0)); //绘制来查看检测点的位置
 //    cvShowImage("yanse", originImg);
     if(flag[0]==0&&flag[1]==1&&flag[2]==1){

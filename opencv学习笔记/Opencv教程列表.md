@@ -30,7 +30,7 @@ tags:
 3. [OpenCV画轮廓的外界圆矩形椭圆等](http://blog.csdn.net/augusdi/article/details/9000949#)
 4. [利用cvMinAreaRect2求取轮廓最小外接矩形](http://blog.csdn.net/fengbingchun/article/details/7069506)
 5. [输出HSV图像某个像素点的值](http://abyss2333.lofter.com/post/1d54e92e_7b51afa)
-6. []()
+6. [CvBox2D说明](http://blog.csdn.net/guoyunfei20/article/details/54616847)
 7. []()
 8. []()
 

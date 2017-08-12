@@ -16,8 +16,8 @@ Mat originMat;         //Mat型原图
 CvMemStorage* mem_storage;
 CvSeq *first_contour = NULL, *c = NULL;
 CvPoint pt[4];
-char *filename[]={"/32.png","/1-1.png","/4-3.png","/h-1.png",0};
-int colorRecgnize=150; //颜色识别的限度
+char *filename[]={"/34.png","/1-1.png","/4-3.png","/h-1.png",0};
+int colorRecgnize=140; //颜色识别的限度
 
 struct Countour{
     //圆形、正方形、长方形、椭圆形4种（ID依次为1, 2, 3, 4）

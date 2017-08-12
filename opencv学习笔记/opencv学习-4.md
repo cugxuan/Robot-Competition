@@ -65,7 +65,7 @@
 - `points` ,点序列或点集数组
 - `storage` ,可选的临时存储仓
 
-函数 cvMinAreaRect2 通过建立凸外形并且旋转外形以寻找给定 2D 点集的最小面积的包围矩形。其中返回的2D盒子定义如下：  
+函数 cvMinAreaRect2 通过建立凸外形并且旋转外形以寻找给定 2D 点集的最小面积的包围矩形。其中返回的2D盒子定义如下： （CvBox2D可参考-->[说明](http://blog.csdn.net/guoyunfei20/article/details/54616847)）
 ```
 typedef struct CvBox2D 
 { 
