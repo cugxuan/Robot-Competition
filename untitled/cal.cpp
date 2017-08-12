@@ -83,7 +83,7 @@ float boxAngle(CvBox2D box)
 {
     if(box.size.width>box.size.height){
         //说明角度是正的
-        return -box.angle;
+        return abs(box.angle);
     }else{
         //否则角度是负的
         box.angle=-(90+box.angle);

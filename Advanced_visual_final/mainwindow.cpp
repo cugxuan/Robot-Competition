@@ -65,7 +65,7 @@ void MainWindow::set_back()
     this->setAutoFillBackground(true); // 显示出背景图.
     QPalette palette = this->palette();
     palette.setBrush(QPalette::Window,
-        QBrush(QPixmap("/home/dongshifo/qt/Advanced_visual/image/1.png").scaled(// 缩放背景图.
+        QBrush(QPixmap("1.png").scaled(// 缩放背景图.
            this->size(),
            Qt::IgnoreAspectRatio,
            Qt::SmoothTransformation)));// 使用平滑的缩放方式
@@ -107,7 +107,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 void MainWindow::on_open_clicked()
 {
     //opne the camera
-    cap=0;
+    cap=1;
     if(!cap.isOpened())
     {
          std::cout<<"error"<<std::endl;
@@ -117,7 +117,8 @@ void MainWindow::on_open_clicked()
         cap>>frame;
         waitKey(30);//给图像绘制留点时间
         // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
-        QImage imag = QImage((const uchar*)(frame.data), frame.cols, frame.rows, QImage::Format_RGB888);
+        QImage imag = QImage((const uchar
+                              *)(frame.data), frame.cols, frame.rows, QImage::Format_RGB888);
         // deep copy the data from mat to QImage
         imag.bits();
         ui->label->setPixmap(QPixmap::fromImage(imag));  // 将图片显示到label上
@@ -162,8 +163,8 @@ void MainWindow::on_get_clicked()
     y[3]=ui->lineEdit_8->text().toInt();
 
 
-    length_x=x[2]-x[0];
-    wideth_y=y[1]-y[0];
+    length_x=x[2]-x[0]-4;
+    wideth_y=y[1]-y[0]-4;
     Mat imageROI(dst,Rect(x[0]+2,y[0]+2,length_x,wideth_y));
 
     namedWindow("qietu");
@@ -221,6 +222,7 @@ void MainWindow::control()
         Gau();
         thres();
         filter();
+//        cvWaitKey();
 #if 1   //使用部分
         check();
 #else   //测试部分

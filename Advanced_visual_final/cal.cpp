@@ -79,6 +79,18 @@ void drawSquares( IplImage* img, CvSeq* squares )
     cvShowImage( "picture", cpy );
     cvReleaseImage( &cpy );
 }
+float boxAngle(CvBox2D box)
+{
+    if(box.size.width>box.size.height){
+        //说明角度是正的
+        return abs(box.angle);
+    }else{
+        //否则角度是负的
+        box.angle=-(90+box.angle);
+        return box.angle;
+    }
+}
+
 //-------辅助形状判断,距离/角度-------
 
 //--------color test-------
@@ -146,41 +158,8 @@ void dfs()
 //    return 0;
 //}
 
-int getColor(int x,int y)
-{
-    // 源图像载入及判断
-    if( !originMat.data )
-       return -1;
-    int watch[3],flag[3];
-    flag[0]=flag[1]=flag[2]=0;
-    for(int i=0;i<3;i++)
-        watch[i] = originMat.at<Vec3b>(x, y)[i];
-
-    for(int i=0;i<3;i++){
-        if(watch[i]>colorRecgnize)   //
-            flag[i]=1;
-    }//BGR蓝绿红
-
-    cvSetReal2D(thrImg,x,y, 255.0); //绘制来查看检测点的位置
-    cvShowImage("yanse1", thrImg);
-
-    if(flag[0]==0&&flag[1]==1&&flag[2]==1){
-        return 3;//黄
-    }else if(flag[0]==1&&flag[1]==0&&flag[2]==0){
-        return 5;//蓝
-    }else if(flag[0]==0&&flag[1]==1&&flag[2]==0){
-        return 4;//绿
-    }else if(flag[0]==0&&flag[1]==0&&flag[2]==1){
-        return 2;//红
-    }else if(flag[0]==0&&flag[1]==0&&flag[2]==0){
-        return 1;//黑
-    }
-    return 0;
-}
-
-
-int color_test(int x,int y)
-{
+int isColorPure(int x,int y)
+{//传值按照x，y
     int color[16];
     int test[6]={0,1,2,3,4,5};
     int test_count[6]={0};
@@ -223,4 +202,38 @@ int color_test(int x,int y)
     return final_color;
 }
 
+int getColor(int x,int y)
+{//传值按照y，x
+//    imshow("mat",originMat);
+    // 源图像载入及判断
+    if( !originMat.data )
+       return -1;
+    Mat tempImage = originMat.clone();
+    int watch[3],flag[3];
+    flag[0]=flag[1]=flag[2]=0;
+    for(int i=0;i<3;i++)
+        watch[i] = originMat.at<Vec3b>(x, y)[i];
+
+    for(int i=0;i<3;i++){
+        if(watch[i]>colorRecgnize)   //
+            flag[i]=1;
+    }//BGR蓝绿红
+
+    cvSetReal2D(thrImg, x, y, 255.0);
+    cvShowImage("colorJudge", thrImg);
+//    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0)); //绘制来查看检测点的位置
+//    cvShowImage("yanse", originImg);
+    if(flag[0]==0&&flag[1]==1&&flag[2]==1){
+        return 3;//黄
+    }else if(flag[0]==1&&flag[1]==0&&flag[2]==0){
+        return 5;//蓝
+    }else if(flag[0]==0&&flag[1]==1&&flag[2]==0){
+        return 4;//绿
+    }else if(flag[0]==0&&flag[1]==0&&flag[2]==1){
+        return 2;//红
+    }else if(flag[0]==0&&flag[1]==0&&flag[2]==0){
+        return 1;//黑
+    }
+    return 0;
+}
 //--------color test-------
