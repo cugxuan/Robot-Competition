@@ -87,6 +87,8 @@ float boxAngle(CvBox2D box)
     }else{
         //否则角度是负的
         box.angle=-(90+box.angle);
+        if(box.angle==0)
+            return 0;
         return box.angle;
     }
 }
@@ -94,11 +96,111 @@ float boxAngle(CvBox2D box)
 //-------辅助形状判断,距离/角度-------
 
 //--------color test-------
-void dfs()
+//对颜色进行递归检测
+int mix,vis[640][480];
+//int dir[8][2]={
+//    0,1 ,1,0 ,0,-1 ,-1,0 ,1,1 ,-1,-1 ,1,-1, -1,1
+//};
+int dir[4][2]={
+    0,1,1,0,0,-1,-1,0
+};//往四个方向进行搜索
+int check(int x,int y)
 {
-
+    if(x>0&&x<=cvGetSize(thrImg).width&&y>0&&y<=cvGetSize(thrImg).height)
+        return 1;
+    return 0;
 }
 
+void dfs(int x,int y,int watch[3],int depth)
+{
+    //对该点的颜色进行读取，存到watchi[3]中
+    int watchi[3];
+    for(int i=0;i<3;i++)
+        watchi[i] = originMat.at<Vec3b>(y, x)[i];
+    //进行判断,对watch值进行比较
+    for(int i=0;i<3;i++)
+    {
+        if(abs(watch[i]-watchi[i])>60)
+            mix=1;
+    }
+    for(int i=0;i<4;i++)
+    {
+        int dx=x+dir[i][0];
+        int dy=y+dir[i][1];
+        if(check(dx,dy)&&depth<13&&!vis[dx][y]){
+            vis[dx][dy]=1;
+            dfs(dx,dy,watchi,depth+1);
+        }
+    }
+}
+
+#if   1 //1 use dfs
+int isColorPure(int x,int y)
+{//传值按照x，y
+    int ans=isColorPure(x,y,0);
+}
+int isColorPure(int x,int y,int depth)
+{//传值按照x，y
+    memset(vis,0,sizeof(vis));
+    //对该点的颜色进行读取，存到watchi[3]中
+    mix=0;
+    int watchi[3];
+    for(int i=0;i<3;i++)
+        watchi[i] = originMat.at<Vec3b>(y, x)[i];
+
+    vis[x][y]=1;
+    dfs(x,y,watchi,depth);
+    if(mix==1){
+        return -1;
+    }else{
+        return getColor(y,x);
+    }
+}
+#else
+int isColorPure(int x,int y)
+{//传值按照x，y
+    int color[16];
+    int test[6]={0,1,2,3,4,5};
+    int test_count[6]={0};
+    int final_color;
+
+    color[0]=getColor(y+9,x);
+    color[1]=getColor(y+6,x+6);
+    color[2]=getColor(y,x+9);
+    color[3]=getColor(y-6,x+6);
+    color[4]=getColor(y-9,x);
+    color[5]=getColor(y-6,x-6);
+    color[6]=getColor(y,x-9);
+    color[7]=getColor(y+6,x-6);
+
+    color[8]=getColor(y+18,x);
+    color[9]=getColor(y+13,x+12);
+    color[10]=getColor(y,x+18);
+    color[11]=getColor(y-13,x+12);
+    color[12]=getColor(y-18,x);
+    color[13]=getColor(y-13,x-12);
+    color[14]=getColor(y,x-18);
+    color[15]=getColor(y+13,x-12);
+    for(int i=0;i<6;i++)
+    {
+        for(int j=0;j<16;j++)
+        {
+           if(test[i]==color[j])
+               test_count[i]++;
+        }
+    }
+    for(int k=0;k<6;k++)
+    {
+        if(test_count[k]>10)
+        {
+            final_color=test[k];
+            break;
+        }
+        else final_color=-1;
+    }
+    return final_color;
+}
+#endif
 //int getColor(int x, int y)
 //{//黑、红、黄、绿、蓝5种（ID依次为1, 2, 3, 4, 5）
 //    CvScalar s=cvGet2D(originHSV,x,y);  //s[0]-s[2],HSV
@@ -141,66 +243,7 @@ void dfs()
 //    return 0;
 //}
 
-//int getColor(int x, int y)
-//{//黑、红、黄、绿、蓝5种（ID依次为1, 2, 3, 4, 5）
-//    CvScalar s=cvGet2D(originHSV,x,y);  //s[0]-s[2],HSV
-//    if(s.val[0]>=0&&s.val[0]<=180&&s.val[1]>=0&&s.val[1]<=255&&s.val[2]>=0&&s.val[2]<=46)
-//        return 1;
-//    else if( ((s.val[0]>=0&&s.val[0]<=10)||(s.val[0]>=156&&s.val[0]<=180))
-//            &&s.val[1]>=43&&s.val[1]<=255&&s.val[2]>=46&&s.val[2]<=255)
-//        return 2;
-//    else if(s.val[0]>=26&&s.val[0]<=34&&s.val[1]>=43&&s.val[1]<=255&&s.val[2]>=46&&s.val[2]<=255)
-//        return 3;
-//    else if(s.val[0]>=35&&s.val[0]<=77&&s.val[1]>=43&&s.val[1]<=255&&s.val[2]>=46&&s.val[2]<=255)
-//        return 4;
-//    else if(s.val[0]>=100&&s.val[0]<=124&&s.val[1]>=43&&s.val[1]<=255&&s.val[2]>=46&&s.val[2]<=255)
-//        return 5;
-//    return 0;
-//}
 
-int isColorPure(int x,int y)
-{//传值按照x，y
-    int color[16];
-    int test[6]={0,1,2,3,4,5};
-    int test_count[6]={0};
-    int final_color;
-
-    color[0]=getColor(y+9,x);
-    color[1]=getColor(y+6,x+6);
-    color[2]=getColor(y,x+9);
-    color[3]=getColor(y-6,x+6);
-    color[4]=getColor(y-9,x);
-    color[5]=getColor(y-6,x-6);
-    color[6]=getColor(y,x-9);
-    color[7]=getColor(y+6,x-6);
-
-    color[8]=getColor(y+18,x);
-    color[9]=getColor(y+13,x+12);
-    color[10]=getColor(y,x+18);
-    color[11]=getColor(y-13,x+12);
-    color[12]=getColor(y-18,x);
-    color[13]=getColor(y-13,x-12);
-    color[14]=getColor(y,x-18);
-    color[15]=getColor(y+13,x-12);
-    for(int i=0;i<6;i++)
-    {
-        for(int j=0;j<16;j++)
-        {
-           if(test[i]==color[j])
-               test_count[i]++;
-        }
-    }
-    for(int k=0;k<6;k++)
-    {
-        if(test_count[k]>14)
-        {
-            final_color=test[k];
-            break;
-        }
-        else final_color=-1;
-    }
-    return final_color;
-}
 
 int getColor(int x,int y)
 {//传值按照y，x

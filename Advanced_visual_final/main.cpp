@@ -60,8 +60,7 @@ void release()
     cvReleaseImage(&originImg);
     cvReleaseImage(&gaussImg);
     cvReleaseImage(&thrImg);
-    cvReleaseImage(&contourImg);
-
+//    cvReleaseImage(&contourImg);
 }
 
 int main(int argc, char *argv[])

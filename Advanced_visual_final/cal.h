@@ -10,5 +10,6 @@ void drawSquares( IplImage* img, CvSeq* squares );
 
 int getColor(int x,int y);
 int isColorPure(int x,int y);
+int isColorPure(int x,int y,int depth);
 
 #endif // CAL_H

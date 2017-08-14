@@ -127,6 +127,7 @@ void MainWindow::on_open_clicked()
 
 void MainWindow::on_get_clicked()
 {
+//    cap=1;
     //finish the demarcate
     cap>>frame;// 从摄像头中抓取并返回每一帧
     imwrite("frame.jpg",frame);
@@ -163,26 +164,33 @@ void MainWindow::on_get_clicked()
     y[3]=ui->lineEdit_8->text().toInt();
 
 
-    length_x=x[2]-x[0]-4;
-    wideth_y=y[1]-y[0]-4;
-    Mat imageROI(dst,Rect(x[0]+2,y[0]+2,length_x,wideth_y));
+//    length_x=x[2]-x[0]-4;
+//    wideth_y=y[1]-y[0]-4;
+//    Mat imageROI(dst,Rect(x[0]+2,y[0]+2,length_x,wideth_y));
+    length_x=x[2]-x[0];
+    wideth_y=y[1]-y[0];
+    Mat imageROI(dst,Rect(x[0],y[0]-20,length_x,wideth_y));
 
     namedWindow("qietu");
     imshow("qietu",imageROI);
 
     originMat=imageROI.clone();
     namedWindow("Handled Image");
-    imshow("Handled Image",dst);
+    imshow("Handled Image",originMat);
     imwrite("zengqiang.png",dst);
 
     //
     originImg=cvCreateImage(cvSize(originMat.cols,originMat.rows),8,3);
-    originImg->imageData=(char *)originMat.data;
+//    originImg->imageData=(char *)originMat.data;
+    *originImg=IplImage(originMat);
     cvShowImage("原图", originImg);
-    waitKey(0);
-    length_changerate=length/sqrt((x[2]-x[0])*(x[2]-x[0])+(y[2]-y[0])*(y[2]-y[0]));
-    width_changerate=wideth/sqrt((y[3]-y[1])*(y[3]-y[1])+(x[3]-x[1])*(x[3]-x[1]));
-/*
+//    waitKey(0);
+//    length_changerate=length/sqrt((x[2]-x[0])*(x[2]-x[0])+(y[2]-y[0])*(y[2]-y[0]));
+//    width_changerate=wideth/sqrt((y[3]-y[1])*(y[3]-y[1])+(x[3]-x[1])*(x[3]-x[1]));
+    length_changerate=(double)length/(double)length_x;
+    width_changerate=(double)wideth/(double)wideth_y;
+
+    /*
     qDebug() << "the lenth of the input:"<<length<<endl;
     qDebug() <<"the length of the input:"<<wideth<<endl;
 
@@ -195,16 +203,19 @@ void MainWindow::on_get_clicked()
 
 void MainWindow::test()
 {
+    ui->textEdit->clear();
     QString vec = QString::number(vecNum, 10);
     ui->num->setText(vec);
+    double temp;
     for(int i=0;i<vecNum;i++)
     {
         QString  id,x,y,th,s;
-        id.sprintf("%s %d %s %d%d","识别目标",i,"ID ",VecCol[i].ID[0],VecCol[1]);
-        x.sprintf("%s %d %s %d","识别目标",i,"中心x ",VecCol[i].X*length_changerate);
-        y.sprintf("%s %d %s %d","识别目标",i,"中心y ",VecCol[i].Y*width_changerate);
-        th.sprintf("%s %d %s %d","识别目标",i,"朝向角TH ",VecCol[i].TH);
-        s.sprintf("%s %d %s %d","识别目标",i,"尺寸S ",VecCol[i].S*length_changerate*width_changerate);
+        id.sprintf("%s %d %s %d%d","识别目标",i+1,"ID ",VecCol[i].ID[0],VecCol[1]);
+        temp=VecCol[i].X*length_changerate;
+        x.sprintf("%s %d %s %.2f","识别目标",i+1,"中心x ",temp);
+        y.sprintf("%s %d %s %.2f","识别目标",i+1,"中心y ",VecCol[i].Y*width_changerate);
+        th.sprintf("%s %d %s %.2f","识别目标",i+1,"朝向角TH ",VecCol[i].TH);
+        s.sprintf("%s %d %s %.2f","识别目标",i+1,"尺寸S ",VecCol[i].S*length_changerate*width_changerate);
 
         ui->textEdit->append(id);
         ui->textEdit->append(x);
@@ -213,11 +224,12 @@ void MainWindow::test()
         ui->textEdit->append(s);
         ui->textEdit->append("\n");
     }
+    cvWaitKey();
 }
 
 void MainWindow::control()
 {//流程控制
-    while (originImg!=NULL) {
+//    while (originImg!=NULL) {
         //init(T);
         Gau();
         thres();
@@ -230,10 +242,10 @@ void MainWindow::control()
 #endif
         PrintC();
         test();
-        release();
+//        release();
 
         cvWaitKey(0);
-    }
+//    }
 }
 
 
@@ -242,5 +254,5 @@ void MainWindow::on_start_clicked()
     //timer->stop();         // 停止读取数据。
     cap.release();
     control();
-    release();
+//    release();
 }

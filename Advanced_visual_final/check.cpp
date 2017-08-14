@@ -104,6 +104,9 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
         if(isExist(VecCol[vecNum].X,VecCol[vecNum].Y)){
             return 1;
         }
+        if(sqrt(disA)>=cvGetSize(originImg).width-5&&sqrt(disB)>=cvGetSize(originImg).height-5){
+            return 1;
+        }
 
         //区分，到这里还差ID和角度
         int colortemp=isColorPure(VecCol[vecNum].X,VecCol[vecNum].Y);
@@ -210,7 +213,7 @@ int checkRound(CvSeq *contours)
     //画出最小外接圆，并显示
     cvCircle(originImg,cvPointFrom32f(center),cvRound(radius),CV_RGB(100,100,100));
     cvShowImage("dst",originImg);
-    // cvWaitKey();
+      cvWaitKey();
 
 
 
@@ -223,7 +226,7 @@ int checkRound(CvSeq *contours)
     //用黄色在图上画椭圆,并显示
     cvEllipseBox(originImg,ellipse,CV_RGB(255,0,0));
     cvShowImage("dst",originImg);
-    // cvWaitKey();
+     cvWaitKey();
 
 
 
@@ -307,8 +310,12 @@ int checkOthers(CvSeq *contours)
 {//判断最后两种轮廓。可乐或方便面
     //这里不对杂色进行检测。前面已经检测过了
 
-    //可乐瓶也是一个最小外接矩形进行处理，通过可乐瓶的长宽比进行区分两种
     CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+    if(isExist(box.center.x,box.center.y)){  //过滤掉逆时针的情况
+        return 1;
+    }
+
+    //可乐瓶也是一个最小外接矩形进行处理，通过可乐瓶的长宽比进行区分两种
     if(abs(box.size.width/box.size.height)<0.5||abs(box.size.height/box.size.width)>2){
         //说明是可乐瓶，按照最小外接矩形来做
         VecCol[vecNum].ID[0]=8;
@@ -321,6 +328,14 @@ int checkOthers(CvSeq *contours)
         return 1;
     }else{
         //说明是方便面，
+        VecCol[vecNum].ID[0]=8;
+        VecCol[vecNum].ID[1]=3;
+        VecCol[vecNum].X=box.center.x;
+        VecCol[vecNum].Y=box.center.y;
+        VecCol[vecNum].S=box.size.height*box.size.width;
+        VecCol[vecNum].TH=box.angle;
+        vecNum++;
+        return 1;
     }
     return 1;
 }
@@ -346,12 +361,13 @@ void check()
     while( contours )
     {
         //判断轮廓的大小.过小的不要,也可直接用contours->totals的大小判断
+        //怕矩形只有四个点出现问题,面积较为合适
         areaS=fabs(cvContourArea(contours,CV_WHOLE_SEQ));
         if( areaS< 100){
             contours=contours->h_next;
             continue;
         }
-        //进行形状的判断k
+        //进行形状的判断
         if(checkRec(contours,squares)){
             cout<<"Rec"<<endl;  //该轮廓是矩形
         }else if(checkRound(contours)){
@@ -365,10 +381,13 @@ void check()
 //        cvShowImage("draw", originImg);
 //        cvWaitKey(0);
 
-#if 1  //傻瓜过滤掉最后一个也就是图片外框
+#if 0  //傻瓜过滤掉最后一个也就是图片外框
         CvSeq *contemp;
         contemp=contours;
         contemp=contemp->h_next;
+        if(contemp==NULL){
+            break;
+        }
         contemp=contemp->h_next;
         if(contemp){
             contemp=contemp->h_next;
