@@ -89,6 +89,8 @@ float boxAngle(CvBox2D box)
         box.angle=-(90+box.angle);
         if(box.angle==0)
             return 0;
+        if(box.angle==-90.0)
+            return 90.0;
         return box.angle;
     }
 }
@@ -244,7 +246,7 @@ int isColorPure(int x,int y)
 //}
 
 
-
+#if 0 //0 use rangea
 int getColor(int x,int y)
 {//传值按照y，x
 //    imshow("mat",originMat);
@@ -279,4 +281,43 @@ int getColor(int x,int y)
     }
     return 0;
 }
+#else
+int getColor(int x,int y)
+{    //传值按照y，x
+    //    imshow("mat",originMat);
+        // 源图像载入及判断
+        if( !originMat.data )
+           return -1;
+        Mat tempImage = originMat.clone();
+        int watch[3],flag[3];
+        flag[0]=flag[1]=flag[2]=0;
+        for(int i=0;i<3;i++)
+            watch[i] = originMat.at<Vec3b>(x, y)[i];
+
+        for(int i=0;i<3;i++){
+            if(watch[i]>colorRecgnize)   //
+                flag[i]=1;
+        }//BGR蓝绿红
+
+        cvSetReal2D(thrImg, x, y, 255.0);
+        cvShowImage("colorJudge", thrImg);
+    //    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0)); //绘制来查看检测点的位置
+    //    cvShowImage("yanse", originImg);
+
+        int colorRange=60;
+        //通过BGR之间的差值来进行判断
+        if(abs(watch[0]-watch[1])<colorRange<&&abs(watch[0]-watch[2])<colorRange&&abs(watch[1]-watch[2])<colorRange){
+            return 1;//黑
+        }else if(abs(watch[2]-watch[0])>colorRange&&abs(watch[2]-watch[1])>colorRange){
+            return 2;//红
+        }else if(abs(watch[2]-watch[0])>colorRange&&abs(watch[2]-watch[1])>colorRange){
+            return 3;//黄
+        }else if(abs(watch[1]-watch[0])>colorRange&&abs(watch[1]-watch[2])>colorRange){
+            return 4;//绿
+        }else if(abs(watch[0]-watch[1])>colorRange&&abs(watch[0]-watch[2])>colorRange){
+            return 5;//蓝
+        }
+        return 0;
+}
+#endif
 //--------color test-------

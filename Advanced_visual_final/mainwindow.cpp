@@ -129,8 +129,12 @@ void MainWindow::on_get_clicked()
 {
 //    cap=1;
     //finish the demarcate
+#if 1 //read in capture
     cap>>frame;// 从摄像头中抓取并返回每一帧
-    imwrite("frame.jpg",frame);
+#else
+    frame=imread("/frame0.jpg");
+#endif
+    imwrite("frame0.jpg",frame);
     // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
     QImage imag = QImage((const uchar*)(frame.data), frame.cols, frame.rows, QImage::Format_RGB888);
     // deep copy the data from mat to QImage
@@ -138,8 +142,8 @@ void MainWindow::on_get_clicked()
     originMat=frame.clone();
     //
     Mat dst;
-    double alpha =1.8;
-    double beta = 50;
+    double alpha =1.4;
+    double beta = 40;
 
     dst = Mat::zeros(originMat.size(),originMat.type());
     for (int i = 0;i<originMat.rows;++i)
@@ -151,9 +155,9 @@ void MainWindow::on_get_clicked()
     imshow("yuantu",frame);
 
     qstrlength=ui->lineEdit_length->text();
-    length=qstrlength.toInt();
+    length=qstrlength.toFloat();
     qstrwideth=ui->lineEdit_wideth->text();
-    wideth=qstrwideth.toInt();
+    wideth=qstrwideth.toFloat();
     x[0]=ui->lineEdit_1->text().toInt();
     x[1]=ui->lineEdit_3->text().toInt();
     x[2]=ui->lineEdit_5->text().toInt();
@@ -184,6 +188,7 @@ void MainWindow::on_get_clicked()
 //    originImg->imageData=(char *)originMat.data;
     *originImg=IplImage(originMat);
     cvShowImage("原图", originImg);
+    imwrite("yuantu.jpg",originMat);
 //    waitKey(0);
 //    length_changerate=length/sqrt((x[2]-x[0])*(x[2]-x[0])+(y[2]-y[0])*(y[2]-y[0]));
 //    width_changerate=wideth/sqrt((y[3]-y[1])*(y[3]-y[1])+(x[3]-x[1])*(x[3]-x[1]));
@@ -209,8 +214,10 @@ void MainWindow::test()
     double temp;
     for(int i=0;i<vecNum;i++)
     {
+        if(VecCol[vecNum].TH==-90.0)
+            VecCol[vecNum].TH=90;
         QString  id,x,y,th,s;
-        id.sprintf("%s %d %s %d%d","识别目标",i+1,"ID ",VecCol[i].ID[0],VecCol[1]);
+        id.sprintf("%s %d %s %d%d","识别目标",i+1,"ID ",VecCol[i].ID[0],VecCol[i].ID[1]);
         temp=VecCol[i].X*length_changerate;
         x.sprintf("%s %d %s %.2f","识别目标",i+1,"中心x ",temp);
         y.sprintf("%s %d %s %.2f","识别目标",i+1,"中心y ",VecCol[i].Y*width_changerate);
@@ -252,6 +259,7 @@ void MainWindow::control()
 void MainWindow::on_start_clicked()
 {
     //timer->stop();         // 停止读取数据。
+    vecNum=0;
     cap.release();
     control();
 //    release();

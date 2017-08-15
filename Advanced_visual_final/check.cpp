@@ -104,8 +104,15 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
         if(isExist(VecCol[vecNum].X,VecCol[vecNum].Y)){
             return 1;
         }
-        if(sqrt(disA)>=cvGetSize(originImg).width-5&&sqrt(disB)>=cvGetSize(originImg).height-5){
+        //使用最小外接矩形算出绿箭和矩形的角度
+        CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+        VecCol[vecNum].TH=boxAngle(box);   //求出角度
+
+        if(abs(box.size.width-cvGetSize(originImg).width)<=5&&abs(box.size.height-cvGetSize(originImg).height)<=5){
             return 1;
+        }
+        if(abs(box.size.height-cvGetSize(originImg).width)<=5&&abs(box.size.width-cvGetSize(originImg).height)<=5){
+           return 1;
         }
 
         //区分，到这里还差ID和角度
@@ -132,9 +139,8 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
                 VecCol[vecNum].ID[1]=3;  //长方形是3
         }
 
-        //使用最小外接矩形算出绿箭和矩形的角度
-        CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
-        VecCol[vecNum].TH=boxAngle(box);   //求出角度
+
+
         //保存信息完成
         vecNum++;
         return 1;   //是矩形或者正方形
@@ -213,7 +219,7 @@ int checkRound(CvSeq *contours)
     //画出最小外接圆，并显示
     cvCircle(originImg,cvPointFrom32f(center),cvRound(radius),CV_RGB(100,100,100));
     cvShowImage("dst",originImg);
-      cvWaitKey();
+//    cvWaitKey();
 
 
 
@@ -226,7 +232,7 @@ int checkRound(CvSeq *contours)
     //用黄色在图上画椭圆,并显示
     cvEllipseBox(originImg,ellipse,CV_RGB(255,0,0));
     cvShowImage("dst",originImg);
-     cvWaitKey();
+//     cvWaitKey();
 
 
 
@@ -296,7 +302,7 @@ int checkRound(CvSeq *contours)
             VecCol[vecNum].ID[1]=4;
             VecCol[vecNum].X=ellipse.center.x;
             VecCol[vecNum].Y=ellipse.center.y;
-            VecCol[vecNum].S=tempS;
+            VecCol[vecNum].S=(ellipse.size.height-2)*ellipse.size.width;
             VecCol[vecNum].TH=boxAngle(box);
             vecNum++;
             return 1;
