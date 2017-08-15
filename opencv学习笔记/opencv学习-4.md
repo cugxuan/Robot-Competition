@@ -13,7 +13,7 @@
 ### ApproxPoly函数
 用指定精度逼近多边形曲线  
 **函数定义**  
-`CvSeq* cvApproxPoly( const void* src_seq, int header_size, CvMemStorage* storage,                       int method, double parameter, int parameter2=0 );`  
+`CvSeq* cvApproxPoly( const void* src_seq, int header_size, CvMemStorage* storage,int method, double parameter, int parameter2=0 );`  
 **函数参数**  
 - `src_seq`  点集数组序列
 - `header_size`  逼近曲线的头尺寸

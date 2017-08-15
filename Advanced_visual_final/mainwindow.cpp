@@ -65,7 +65,7 @@ void MainWindow::set_back()
     this->setAutoFillBackground(true); // 显示出背景图.
     QPalette palette = this->palette();
     palette.setBrush(QPalette::Window,
-        QBrush(QPixmap("1.png").scaled(// 缩放背景图.
+        QBrush(QPixmap("/back.png").scaled(// 缩放背景图.
            this->size(),
            Qt::IgnoreAspectRatio,
            Qt::SmoothTransformation)));// 使用平滑的缩放方式
@@ -129,10 +129,11 @@ void MainWindow::on_get_clicked()
 {
 //    cap=1;
     //finish the demarcate
-#if 1 //read in capture
+#if 0//read in capture
     cap>>frame;// 从摄像头中抓取并返回每一帧
 #else
-    frame=imread("/frame0.jpg");
+    frame=imread("/home/xuan/qt/piture/6.jpg");
+//    frame=imread("/frame1.jpg");
 #endif
     imwrite("frame0.jpg",frame);
     // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。

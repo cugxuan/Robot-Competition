@@ -94,6 +94,17 @@ float boxAngle(CvBox2D box)
         return box.angle;
     }
 }
+void drawBox(CvBox2D box)
+{
+    //绘用蓝色制外接最小矩形
+    CvPoint2D32f pt[4];
+    cvBoxPoints(box,pt);
+    for(int i = 0;i<4;++i){
+        cvLine(thrImg,cvPointFrom32f(pt[i]),cvPointFrom32f(pt[((i+1)%4)?(i+1):0]),CV_RGB(0,0,255));
+    }
+    cvShowImage("dst",thrImg);
+    cvWaitKey();
+}
 
 //-------辅助形状判断,距离/角度-------
 
@@ -119,18 +130,23 @@ void dfs(int x,int y,int watch[3],int depth)
     int watchi[3];
     for(int i=0;i<3;i++)
         watchi[i] = originMat.at<Vec3b>(y, x)[i];
+
+    cvSetReal2D(thrImg, y, x, 255.0);
+    cvShowImage("colorJudge", thrImg);
+//    cvWaitKey();
+
     //进行判断,对watch值进行比较
     for(int i=0;i<3;i++)
     {
-        if(abs(watch[i]-watchi[i])>60)
+        if(abs(watch[i]-watchi[i])>20)
             mix=1;
     }
     for(int i=0;i<4;i++)
     {
         int dx=x+dir[i][0];
         int dy=y+dir[i][1];
-        if(check(dx,dy)&&depth<13&&!vis[dx][y]){
-            vis[dx][dy]=1;
+        if(check(dx,dy)&&depth<11&&!vis[dy][dx]){
+            vis[dy][dx]=1;
             dfs(dx,dy,watchi,depth+1);
         }
     }
@@ -140,6 +156,7 @@ void dfs(int x,int y,int watch[3],int depth)
 int isColorPure(int x,int y)
 {//传值按照x，y
     int ans=isColorPure(x,y,0);
+    return ans;
 }
 int isColorPure(int x,int y,int depth)
 {//传值按照x，y
@@ -150,7 +167,7 @@ int isColorPure(int x,int y,int depth)
     for(int i=0;i<3;i++)
         watchi[i] = originMat.at<Vec3b>(y, x)[i];
 
-    vis[x][y]=1;
+    vis[y][x]=1;
     dfs(x,y,watchi,depth);
     if(mix==1){
         return -1;
@@ -193,7 +210,7 @@ int isColorPure(int x,int y)
     }
     for(int k=0;k<6;k++)
     {
-        if(test_count[k]>10)
+        if(test_count[k]>14)
         {
             final_color=test[k];
             break;
@@ -246,7 +263,7 @@ int isColorPure(int x,int y)
 //}
 
 
-#if 0 //0 use rangea
+#if 0 //0 use range
 int getColor(int x,int y)
 {//传值按照y，x
 //    imshow("mat",originMat);
@@ -304,20 +321,37 @@ int getColor(int x,int y)
     //    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0)); //绘制来查看检测点的位置
     //    cvShowImage("yanse", originImg);
 
-        int colorRange=60;
+        int colorRange=40,color=0;
         //通过BGR之间的差值来进行判断
-        if(abs(watch[0]-watch[1])<colorRange<&&abs(watch[0]-watch[2])<colorRange&&abs(watch[1]-watch[2])<colorRange){
+        if(abs(watch[0]-watch[1])<colorRange&&abs(watch[0]-watch[2])<colorRange&&abs(watch[1]-watch[2])<colorRange){
             return 1;//黑
         }else if(abs(watch[2]-watch[0])>colorRange&&abs(watch[2]-watch[1])>colorRange){
             return 2;//红
-        }else if(abs(watch[2]-watch[0])>colorRange&&abs(watch[2]-watch[1])>colorRange){
+        }else if(abs(watch[2]-watch[0])>colorRange&&abs(watch[1]-watch[0])>colorRange&&abs(watch[1]-watch[2]<colorRange)){
             return 3;//黄
         }else if(abs(watch[1]-watch[0])>colorRange&&abs(watch[1]-watch[2])>colorRange){
             return 4;//绿
         }else if(abs(watch[0]-watch[1])>colorRange&&abs(watch[0]-watch[2])>colorRange){
             return 5;//蓝
         }
-        return 0;
+        if(color==0){
+//            cvSetReal2D(thrImg, x, y, 255.0);
+//            cvShowImage("colorJudge", thrImg);
+        //    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0)); //绘制来查看检测点的位置
+        //    cvShowImage("yanse", originImg);
+            if(flag[0]==0&&flag[1]==1&&flag[2]==1){
+                return 3;//黄
+            }else if(flag[0]==1&&flag[1]==0&&flag[2]==0){
+                return 5;//蓝
+            }else if(flag[0]==0&&flag[1]==1&&flag[2]==0){
+                return 4;//绿
+            }else if(flag[0]==0&&flag[1]==0&&flag[2]==1){
+                return 2;//红
+            }else if(flag[0]==0&&flag[1]==0&&flag[2]==0){
+                return 1;//黑
+            }
+        }
+        return 5;  //都检测不出来返回蓝色
 }
 #endif
 //--------color test-------

@@ -45,7 +45,15 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
     CvSeq* result;
     // 使用近似轮廓精度与轮廓周长成比例
     result = cvApproxPoly( contours, sizeof(CvContour), mem_storage,
-        CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0 );
+        CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.03, 0 );
+
+    cout<<endl<<cvContourPerimeter(contours)<<"  "<<result->total<<"  "<<fabs(cvContourArea(result,CV_WHOLE_SEQ))<<endl;
+    cvDrawContours (thrImg, result, CV_RGB(255,0,0),CV_RGB(0,0,100),1,2,8,cvPoint(0,0));
+    cvShowImage("approx",thrImg);
+    cvWaitKey();
+
+//    result = cvApproxPoly( contours, sizeof(CvContour), mem_storage,
+//       CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0 );
 //    if(0){//如果是图像框,则跳过
 //        return 1;
 //    }
@@ -53,7 +61,7 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
     // 相对较大的区域判断过滤掉噪声轮廓，并且是凸的
     // 注意：使用一个区域的绝对值，区域可能是正面或负面，按照轮廓方向
     if( result->total == 4 &&
-        fabs(cvContourArea(result,CV_WHOLE_SEQ)) > 1000 &&
+        fabs(cvContourArea(contours,CV_WHOLE_SEQ)) > 800 &&
         cvCheckContourConvexity(result) )
     {
         s = 0;
@@ -118,6 +126,11 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
         //区分，到这里还差ID和角度
         int colortemp=isColorPure(VecCol[vecNum].X,VecCol[vecNum].Y);
         if(colortemp==-1){  //如果有杂色说明是绿箭
+            //使用大于2.8小于0.4的长宽比将可乐罐过滤
+            if(abs(box.size.height/box.size.width)<2.8&&abs(box.size.height/box.size.width)>0.4){
+                return 0;
+            }
+
             VecCol[vecNum].ID[0]=8;
             VecCol[vecNum].ID[1]=2;
         }else if(abs(sqrt(disA)-sqrt(disB))<4){
@@ -138,8 +151,6 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
                 VecCol[vecNum].ID[0]=colortemp;
                 VecCol[vecNum].ID[1]=3;  //长方形是3
         }
-
-
 
         //保存信息完成
         vecNum++;
@@ -245,6 +256,7 @@ int checkRound(CvSeq *contours)
             //说明是奥利奥，通过最小外接矩形来进行判断
 
             CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+            drawBox(box);
             if(isExist(box.center.x,box.center.y)){  //过滤掉逆时针的情况
                 return 1;
             }
@@ -261,7 +273,7 @@ int checkRound(CvSeq *contours)
             if(isExist(center.x,center.y)){  //过滤掉逆时针的情况
                 return 1;
             }
-            VecCol[vecNum].ID[0]=getColor(center.y,center.x);
+            VecCol[vecNum].ID[0]=colortemp;
     //        cvSetReal2D(thrImg,center.y,center.x+25, 255.0);
     //        cvShowImage("yanse", thrImg);
             VecCol[vecNum].ID[1]=1;
@@ -283,6 +295,8 @@ int checkRound(CvSeq *contours)
         int colortemp=isColorPure(ellipse.center.x,ellipse.center.y);
         if(colortemp==-1){
             CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+            drawBox(box);
+
             if(abs(box.size.width/box.size.height)<0.6||abs(box.size.height/box.size.width)>1.6){
                 //说明是可乐瓶，按照最小外接矩形来做
                 VecCol[vecNum].ID[0]=8;
@@ -297,8 +311,9 @@ int checkRound(CvSeq *contours)
         }else{
             //椭圆的情况
             CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+//            drawBox(box);
 
-            VecCol[vecNum].ID[0]=getColor(ellipse.center.y,ellipse.center.x);
+            VecCol[vecNum].ID[0]=colortemp;
             VecCol[vecNum].ID[1]=4;
             VecCol[vecNum].X=ellipse.center.x;
             VecCol[vecNum].Y=ellipse.center.y;
@@ -317,31 +332,35 @@ int checkOthers(CvSeq *contours)
     //这里不对杂色进行检测。前面已经检测过了
 
     CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+    drawBox(box);
     if(isExist(box.center.x,box.center.y)){  //过滤掉逆时针的情况
         return 1;
     }
+    int colortemp=isColorPure(box.center.x,box.center.y);
+    if(colortemp==-1){
+        //可乐瓶也是一个最小外接矩形进行处理，通过可乐瓶的长宽比进行区分两种
+        if(abs(box.size.height/box.size.width)<0.6||abs(box.size.height/box.size.width)>1.6){
+            //说明是可乐瓶，按照最小外接矩形来做
+            VecCol[vecNum].ID[0]=8;
+            VecCol[vecNum].ID[1]=1;
+            VecCol[vecNum].X=box.center.x;
+            VecCol[vecNum].Y=box.center.y;
+            VecCol[vecNum].S=box.size.height*box.size.width;
+            VecCol[vecNum].TH=box.angle;
+            vecNum++;
+            return 1;
+        }else{
+            //说明是方便面，
+            VecCol[vecNum].ID[0]=8;
+            VecCol[vecNum].ID[1]=3;
+            VecCol[vecNum].X=box.center.x;
+            VecCol[vecNum].Y=box.center.y;
+            VecCol[vecNum].S=box.size.height*box.size.width;
+            VecCol[vecNum].TH=box.angle;
+            vecNum++;
+            return 1;
+        }
 
-    //可乐瓶也是一个最小外接矩形进行处理，通过可乐瓶的长宽比进行区分两种
-    if(abs(box.size.width/box.size.height)<0.5||abs(box.size.height/box.size.width)>2){
-        //说明是可乐瓶，按照最小外接矩形来做
-        VecCol[vecNum].ID[0]=8;
-        VecCol[vecNum].ID[1]=1;
-        VecCol[vecNum].X=box.center.x;
-        VecCol[vecNum].Y=box.center.y;
-        VecCol[vecNum].S=box.size.height*box.size.width;
-        VecCol[vecNum].TH=box.angle;
-        vecNum++;
-        return 1;
-    }else{
-        //说明是方便面，
-        VecCol[vecNum].ID[0]=8;
-        VecCol[vecNum].ID[1]=3;
-        VecCol[vecNum].X=box.center.x;
-        VecCol[vecNum].Y=box.center.y;
-        VecCol[vecNum].S=box.size.height*box.size.width;
-        VecCol[vecNum].TH=box.angle;
-        vecNum++;
-        return 1;
     }
     return 1;
 }
@@ -369,7 +388,7 @@ void check()
         //判断轮廓的大小.过小的不要,也可直接用contours->totals的大小判断
         //怕矩形只有四个点出现问题,面积较为合适
         areaS=fabs(cvContourArea(contours,CV_WHOLE_SEQ));
-        if( areaS< 100){
+        if( areaS< 400){
             contours=contours->h_next;
             continue;
         }
@@ -412,3 +431,4 @@ void check()
 
 
 //-------形状判断-------
+
