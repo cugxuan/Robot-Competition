@@ -49,7 +49,7 @@ void Gau()
 {//对originImg进行高斯过滤
     gaussImg=cvCreateImage(cvGetSize(originImg), 8, 3);
     cvSmooth(originImg,gaussImg,CV_GAUSSIAN,3,3,0,0);  //  Gauss 平滑
-    cvShowImage("高斯过滤", gaussImg);
+//    cvShowImage("高斯过滤", gaussImg);
 }
 //-------初始化和高斯过滤-------
 
@@ -59,11 +59,11 @@ void thres()
     //创建临时图，灰度化高斯图像
     IplImage* temp=cvCreateImage(cvGetSize(originImg), 8, 1);
     cvCvtColor(gaussImg,temp,CV_RGB2GRAY);
-    cvShowImage("灰化高斯", temp);
+//    cvShowImage("灰化高斯", temp);
     //分配thrImg空间，并且二值化
     thrImg=cvCreateImage(cvGetSize(originImg), 8, 1);
     cvThreshold(temp, thrImg, 190, 255, CV_THRESH_BINARY); //190为阈值范围
-    cvShowImage("二值化结果", thrImg);
+//    cvShowImage("二值化结果", thrImg);
     //清空临时图缓存
     cvReleaseImage(&temp);
 }
@@ -87,7 +87,7 @@ void filter()
         cvScalar(100),
         2            //old:1           //#2 需更改区域
         );
-    cvShowImage("二值轮廓", thrImg);
+//    cvShowImage("二值轮廓", thrImg);
     cvClearMemStorage(mem_storage);
 }
 

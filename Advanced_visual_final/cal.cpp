@@ -131,8 +131,9 @@ void dfs(int x,int y,int watch[3],int depth)
     for(int i=0;i<3;i++)
         watchi[i] = originMat.at<Vec3b>(y, x)[i];
 
-    cvSetReal2D(thrImg, y, x, 255.0);
-    cvShowImage("colorJudge", thrImg);
+//    cout<<x<<":"<<y<<endl<<"0:"<<watch[0]<<"  1:"<<watch[1]<<"  2:"<<watch[2]<<endl;
+//    cvSetReal2D(thrImg, y, x, 255.0);
+//    cvShowImage("colorJudge", thrImg);
 //    cvWaitKey();
 
     //进行判断,对watch值进行比较
@@ -321,35 +322,33 @@ int getColor(int x,int y)
     //    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0)); //绘制来查看检测点的位置
     //    cvShowImage("yanse", originImg);
 
-        int colorRange=40,color=0;
+        int colorRange=40;
         //通过BGR之间的差值来进行判断
-        if(abs(watch[0]-watch[1])<colorRange&&abs(watch[0]-watch[2])<colorRange&&abs(watch[1]-watch[2])<colorRange){
+        if(abs(watch[0]-watch[1]<colorRange)&&abs(watch[0]-watch[2])<colorRange&&abs(watch[1]-watch[2])<colorRange){
             return 1;//黑
-        }else if(abs(watch[2]-watch[0])>colorRange&&abs(watch[2]-watch[1])>colorRange){
+        }else if(watch[2]-watch[0]>colorRange&&watch[2]-watch[1]>colorRange){
             return 2;//红
-        }else if(abs(watch[2]-watch[0])>colorRange&&abs(watch[1]-watch[0])>colorRange&&abs(watch[1]-watch[2]<colorRange)){
+        }else if(watch[2]-watch[0]>colorRange&&watch[1]-watch[0]>colorRange&&abs(watch[1]-watch[2])<colorRange){
             return 3;//黄
-        }else if(abs(watch[1]-watch[0])>colorRange&&abs(watch[1]-watch[2])>colorRange){
+        }else if(watch[1]-watch[0]>colorRange&&watch[1]-watch[2]>colorRange){
             return 4;//绿
-        }else if(abs(watch[0]-watch[1])>colorRange&&abs(watch[0]-watch[2])>colorRange){
+        }else if(watch[0]-watch[1]>colorRange&&watch[0]-watch[2]>colorRange){
             return 5;//蓝
         }
-        if(color==0){
 //            cvSetReal2D(thrImg, x, y, 255.0);
 //            cvShowImage("colorJudge", thrImg);
         //    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0)); //绘制来查看检测点的位置
         //    cvShowImage("yanse", originImg);
-            if(flag[0]==0&&flag[1]==1&&flag[2]==1){
-                return 3;//黄
-            }else if(flag[0]==1&&flag[1]==0&&flag[2]==0){
-                return 5;//蓝
-            }else if(flag[0]==0&&flag[1]==1&&flag[2]==0){
-                return 4;//绿
-            }else if(flag[0]==0&&flag[1]==0&&flag[2]==1){
-                return 2;//红
-            }else if(flag[0]==0&&flag[1]==0&&flag[2]==0){
-                return 1;//黑
-            }
+        if(flag[0]==0&&flag[1]==1&&flag[2]==1){
+            return 3;//黄
+        }else if(flag[0]==1&&flag[1]==0&&flag[2]==0){
+            return 5;//蓝
+        }else if(flag[0]==0&&flag[1]==1&&flag[2]==0){
+            return 4;//绿
+        }else if(flag[0]==0&&flag[1]==0&&flag[2]==1){
+            return 2;//红
+        }else if(flag[0]==0&&flag[1]==0&&flag[2]==0){
+            return 1;//黑
         }
         return 5;  //都检测不出来返回蓝色
 }

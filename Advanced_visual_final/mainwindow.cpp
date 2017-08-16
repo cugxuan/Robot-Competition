@@ -129,10 +129,10 @@ void MainWindow::on_get_clicked()
 {
 //    cap=1;
     //finish the demarcate
-#if 0//read in capture
+#if 1//read in capture
     cap>>frame;// 从摄像头中抓取并返回每一帧
 #else
-    frame=imread("/home/xuan/qt/piture/6.jpg");
+    frame=imread("/home/xuan/qt/piture/frame0.jpg");
 //    frame=imread("/frame1.jpg");
 #endif
     imwrite("frame0.jpg",frame);
@@ -152,8 +152,8 @@ void MainWindow::on_get_clicked()
             for(int k = 0;k<3;++k)
                 dst.at<Vec3b>(i,j)[k] = saturate_cast<uchar>(originMat.at<Vec3b>(i,j)[k]*alpha+beta);
 
-    namedWindow("yuantu");
-    imshow("yuantu",frame);
+//    namedWindow("yuantu");
+//    imshow("yuantu",frame);
 
     qstrlength=ui->lineEdit_length->text();
     length=qstrlength.toFloat();
@@ -176,12 +176,12 @@ void MainWindow::on_get_clicked()
     wideth_y=y[1]-y[0];
     Mat imageROI(dst,Rect(x[0],y[0]-20,length_x,wideth_y));
 
-    namedWindow("qietu");
-    imshow("qietu",imageROI);
+//    namedWindow("qietu");
+//    imshow("qietu",imageROI);
 
     originMat=imageROI.clone();
-    namedWindow("Handled Image");
-    imshow("Handled Image",originMat);
+//    namedWindow("Handled Image");
+//    imshow("Handled Image",originMat);
     imwrite("zengqiang.png",dst);
 
     //
@@ -219,11 +219,14 @@ void MainWindow::test()
             VecCol[vecNum].TH=90;
         QString  id,x,y,th,s;
         id.sprintf("%s %d %s %d%d","识别目标",i+1,"ID ",VecCol[i].ID[0],VecCol[i].ID[1]);
-        temp=VecCol[i].X*length_changerate;
-        x.sprintf("%s %d %s %.2f","识别目标",i+1,"中心x ",temp);
-        y.sprintf("%s %d %s %.2f","识别目标",i+1,"中心y ",VecCol[i].Y*width_changerate);
-        th.sprintf("%s %d %s %.2f","识别目标",i+1,"朝向角TH ",VecCol[i].TH);
-        s.sprintf("%s %d %s %.2f","识别目标",i+1,"尺寸S ",VecCol[i].S*length_changerate*width_changerate);
+//        x.sprintf("%s %d %s %.2f","识别目标",i+1,"中心x ",VecCol[i].X*length_changerate);
+//        y.sprintf("%s %d %s %.2f","识别目标",i+1,"中心y ",VecCol[i].Y*width_changerate);
+//        th.sprintf("%s %d %s %.2f","识别目标",i+1,"朝向角TH ",VecCol[i].TH);
+//        s.sprintf("%s %d %s %.2f","识别目标",i+1,"尺寸S ",VecCol[i].S*length_changerate*width_changerate);
+        x.sprintf("%s %d %s %d","识别目标",i+1,"中心x ",(int)(VecCol[i].X*length_changerate+0.5));
+        y.sprintf("%s %d %s %d","识别目标",i+1,"中心y ",(int)(VecCol[i].Y*width_changerate+0.5));
+        th.sprintf("%s %d %s %d","识别目标",i+1,"朝向角TH ",(int)(VecCol[i].TH+0.5));
+        s.sprintf("%s %d %s %d","识别目标",i+1,"尺寸S ",(int)(VecCol[i].S*length_changerate*width_changerate+0.5));
 
         ui->textEdit->append(id);
         ui->textEdit->append(x);

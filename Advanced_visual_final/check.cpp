@@ -47,10 +47,10 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
     result = cvApproxPoly( contours, sizeof(CvContour), mem_storage,
         CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.03, 0 );
 
-    cout<<endl<<cvContourPerimeter(contours)<<"  "<<result->total<<"  "<<fabs(cvContourArea(result,CV_WHOLE_SEQ))<<endl;
-    cvDrawContours (thrImg, result, CV_RGB(255,0,0),CV_RGB(0,0,100),1,2,8,cvPoint(0,0));
-    cvShowImage("approx",thrImg);
-    cvWaitKey();
+//    cout<<endl<<cvContourPerimeter(contours)<<"  "<<result->total<<"  "<<fabs(cvContourArea(result,CV_WHOLE_SEQ))<<endl;
+//    cvDrawContours (thrImg, result, CV_RGB(255,0,0),CV_RGB(0,0,100),1,2,8,cvPoint(0,0));
+//    cvShowImage("approx",thrImg);
+//    cvWaitKey();
 
 //    result = cvApproxPoly( contours, sizeof(CvContour), mem_storage,
 //       CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0 );
@@ -60,8 +60,8 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
     // 矩形轮廓在近似后有四个顶点
     // 相对较大的区域判断过滤掉噪声轮廓，并且是凸的
     // 注意：使用一个区域的绝对值，区域可能是正面或负面，按照轮廓方向
-    if( result->total == 4 &&
-        fabs(cvContourArea(contours,CV_WHOLE_SEQ)) > 800 &&
+    if( result->total == 4 /*&&
+        fabs(cvContourArea(contours,CV_WHOLE_SEQ)) > 800*/ &&
         cvCheckContourConvexity(result) )
     {
         s = 0;
@@ -116,17 +116,17 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
         CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
         VecCol[vecNum].TH=boxAngle(box);   //求出角度
 
-        if(abs(box.size.width-cvGetSize(originImg).width)<=5&&abs(box.size.height-cvGetSize(originImg).height)<=5){
+        if(abs(box.size.width-cvGetSize(originImg).width)<=10&&abs(box.size.height-cvGetSize(originImg).height)<=10){
             return 1;
         }
-        if(abs(box.size.height-cvGetSize(originImg).width)<=5&&abs(box.size.width-cvGetSize(originImg).height)<=5){
+        if(abs(box.size.height-cvGetSize(originImg).width)<=10&&abs(box.size.width-cvGetSize(originImg).height)<=10){
            return 1;
         }
 
         //区分，到这里还差ID和角度
         int colortemp=isColorPure(VecCol[vecNum].X,VecCol[vecNum].Y);
         if(colortemp==-1){  //如果有杂色说明是绿箭
-            //使用大于2.8小于0.4的长宽比将可乐罐过滤
+            //使用小于2.8大于0.4的长宽比将可乐罐过滤
             if(abs(box.size.height/box.size.width)<2.8&&abs(box.size.height/box.size.width)>0.4){
                 return 0;
             }
@@ -229,7 +229,7 @@ int checkRound(CvSeq *contours)
     cout<<"Radiu = "<<calRadius<<endl;
     //画出最小外接圆，并显示
     cvCircle(originImg,cvPointFrom32f(center),cvRound(radius),CV_RGB(100,100,100));
-    cvShowImage("dst",originImg);
+//    cvShowImage("dst",originImg);
 //    cvWaitKey();
 
 
@@ -242,7 +242,7 @@ int checkRound(CvSeq *contours)
     cout<<"abs::"<<abs(tempS-ellipse.size.height*ellipse.size.width/4.0)<<endl;
     //用黄色在图上画椭圆,并显示
     cvEllipseBox(originImg,ellipse,CV_RGB(255,0,0));
-    cvShowImage("dst",originImg);
+//    cvShowImage("dst",originImg);
 //     cvWaitKey();
 
 
@@ -256,7 +256,7 @@ int checkRound(CvSeq *contours)
             //说明是奥利奥，通过最小外接矩形来进行判断
 
             CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
-            drawBox(box);
+//            drawBox(box);
             if(isExist(box.center.x,box.center.y)){  //过滤掉逆时针的情况
                 return 1;
             }
@@ -279,7 +279,8 @@ int checkRound(CvSeq *contours)
             VecCol[vecNum].ID[1]=1;
             VecCol[vecNum].X=center.x;
             VecCol[vecNum].Y=center.y;
-            VecCol[vecNum].S=(2*calRadius)*(2*calRadius);
+//            VecCol[vecNum].S=(2*calRadius)*(2*calRadius);
+            VecCol[vecNum].S=(2*calRadius-2)*(2*calRadius-2);  //8.16  11:40
             VecCol[vecNum].TH=0;
             vecNum++;
             return 1;
@@ -295,16 +296,20 @@ int checkRound(CvSeq *contours)
         int colortemp=isColorPure(ellipse.center.x,ellipse.center.y);
         if(colortemp==-1){
             CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
-            drawBox(box);
+//            drawBox(box);
 
-            if(abs(box.size.width/box.size.height)<0.6||abs(box.size.height/box.size.width)>1.6){
+            if(abs(box.size.width/box.size.height)<0.6||abs(box.size.width/box.size.height)>1.6){
                 //说明是可乐瓶，按照最小外接矩形来做
                 VecCol[vecNum].ID[0]=8;
                 VecCol[vecNum].ID[1]=1;
                 VecCol[vecNum].X=box.center.x;
                 VecCol[vecNum].Y=box.center.y;
                 VecCol[vecNum].S=box.size.height*box.size.width;
-                VecCol[vecNum].TH=box.angle;
+                VecCol[vecNum].TH=boxAngle(box);
+                if(VecCol[vecNum].TH>0)
+                    VecCol[vecNum].TH=90-VecCol[vecNum].TH;
+                else
+                    VecCol[vecNum].TH=90+VecCol[vecNum].TH;
                 vecNum++;
                 return 1;
             }
@@ -332,7 +337,7 @@ int checkOthers(CvSeq *contours)
     //这里不对杂色进行检测。前面已经检测过了
 
     CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
-    drawBox(box);
+//    drawBox(box);
     if(isExist(box.center.x,box.center.y)){  //过滤掉逆时针的情况
         return 1;
     }
@@ -346,7 +351,11 @@ int checkOthers(CvSeq *contours)
             VecCol[vecNum].X=box.center.x;
             VecCol[vecNum].Y=box.center.y;
             VecCol[vecNum].S=box.size.height*box.size.width;
-            VecCol[vecNum].TH=box.angle;
+            VecCol[vecNum].TH=boxAngle(box);
+            if(VecCol[vecNum].TH>0)
+                VecCol[vecNum].TH=90-VecCol[vecNum].TH;
+            else
+                VecCol[vecNum].TH=90+VecCol[vecNum].TH;
             vecNum++;
             return 1;
         }else{
@@ -356,7 +365,7 @@ int checkOthers(CvSeq *contours)
             VecCol[vecNum].X=box.center.x;
             VecCol[vecNum].Y=box.center.y;
             VecCol[vecNum].S=box.size.height*box.size.width;
-            VecCol[vecNum].TH=box.angle;
+            VecCol[vecNum].TH=boxAngle(box)+20;
             vecNum++;
             return 1;
         }
@@ -385,6 +394,16 @@ void check()
     //遍历每个轮廓
     while( contours )
     {
+        CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+        if(abs(box.size.width-cvGetSize(originImg).width)<=10&&abs(box.size.height-cvGetSize(originImg).height)<=10){
+            contours = contours->h_next;
+            continue;
+        }
+        if(abs(box.size.height-cvGetSize(originImg).width)<=10&&abs(box.size.width-cvGetSize(originImg).height)<=10){
+            contours = contours->h_next;
+            continue;
+        }
+
         //判断轮廓的大小.过小的不要,也可直接用contours->totals的大小判断
         //怕矩形只有四个点出现问题,面积较为合适
         areaS=fabs(cvContourArea(contours,CV_WHOLE_SEQ));

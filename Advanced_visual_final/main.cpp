@@ -50,7 +50,7 @@ void PrintC()
             cout<<"angle:"<<VecCol[i].TH<<endl<<endl;
 
             cvSetReal2D(thrImg,VecCol[i].Y, VecCol[i].X, 255.0);
-            cvShowImage("yanse", thrImg);
+            cvShowImage("result", thrImg);
         }
     }
 }
