@@ -29,7 +29,7 @@ struct Countour{
     int ID[2];
     int X,Y,S;
     double TH;   //识别物体朝向角
-}VecCol[15];
+}VecCol[20];
 int vecNum;    //检测到的物体的个数
 double areaS;  //轮廓的面积
 //-------变量定义--------

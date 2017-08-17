@@ -22,7 +22,7 @@ extern struct Countour{
     int ID[2];
     int X,Y,S;
     double TH;   //识别物体朝向角
-}VecCol[15];
+}VecCol[20];
 extern int vecNum;    //检测到的物体的个数
 extern double areaS;  //轮廓的面积
 //-------变量定义--------
@@ -47,16 +47,40 @@ int checkRec(CvSeq *contours,CvSeq *&squares)
     result = cvApproxPoly( contours, sizeof(CvContour), mem_storage,
         CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.03, 0 );
 
-//    cout<<endl<<cvContourPerimeter(contours)<<"  "<<result->total<<"  "<<fabs(cvContourArea(result,CV_WHOLE_SEQ))<<endl;
-//    cvDrawContours (thrImg, result, CV_RGB(255,0,0),CV_RGB(0,0,100),1,2,8,cvPoint(0,0));
-//    cvShowImage("approx",thrImg);
-//    cvWaitKey();
-
+    // cout<<endl<<cvContourPerimeter(contours)<<"  "<<result->total<<"  "<<fabs(cvContourArea(result,CV_WHOLE_SEQ))<<endl;
+    // cvDrawContours (thrImg, result, CV_RGB(255,0,0),CV_RGB(0,0,100),1,2,8,cvPoint(0,0));
+    // cvShowImage("approx",thrImg);
+    // cvWaitKey();
+//------------猥琐做法,比赛中有点绿箭会出现拟合出五个点的情况,用比例猥琐一下
+    if(cvCheckContourConvexity(result)){
+        CvBox2D box = cvMinAreaRect2(contours,NULL);  //最小外围矩形
+        int colortemp=isColorPure(box.center.x,box.center.y);
+        if(colortemp==-1){  //如果有杂色说明是绿箭
+            if(isExist(box.center.x,box.center.y)){  //过滤掉逆时针的情况
+                return 1;
+            }
+            
+            //使用小于2.8大于0.4的长宽比将可乐罐过滤
+            if(abs(box.size.height/box.size.width)<2.8&&abs(box.size.height/box.size.width)>0.4){
+                return 0;
+            }
+            VecCol[vecNum].ID[0]=8;
+            VecCol[vecNum].ID[1]=2;
+            VecCol[vecNum].X=box.center.x;
+            VecCol[vecNum].Y=box.center.y;
+            VecCol[vecNum].S=box.size.height*box.size.width;
+            VecCol[vecNum].TH=boxAngle(box);
+            vecNum++;
+            return 1;
+        }
+    }
+//------------猥琐做法,比赛中有点绿箭会出现拟合出五个点的情况,用比例猥琐一下
 //    result = cvApproxPoly( contours, sizeof(CvContour), mem_storage,
 //       CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0 );
 //    if(0){//如果是图像框,则跳过
 //        return 1;
 //    }
+
     // 矩形轮廓在近似后有四个顶点
     // 相对较大的区域判断过滤掉噪声轮廓，并且是凸的
     // 注意：使用一个区域的绝对值，区域可能是正面或负面，按照轮廓方向
@@ -243,12 +267,12 @@ int checkRound(CvSeq *contours)
     //用黄色在图上画椭圆,并显示
     cvEllipseBox(originImg,ellipse,CV_RGB(255,0,0));
 //    cvShowImage("dst",originImg);
-//     cvWaitKey();
+//    cvWaitKey();
 
 
 
     //通过颜色过滤奥利奥，外接圆和最小外接椭圆面积基本相等
-    if(abs(calRadius-radius)<4&&abs(tempS-ellipse.size.height*ellipse.size.width/4.0)<30)
+    if(abs(calRadius-radius)<4&&abs(tempS-ellipse.size.height*ellipse.size.width/4.0)<15)
     {//奥利奥的情况
         //是否是杂色的情况
         int colortemp=isColorPure(center.x,center.y);
@@ -310,6 +334,7 @@ int checkRound(CvSeq *contours)
                     VecCol[vecNum].TH=90-VecCol[vecNum].TH;
                 else
                     VecCol[vecNum].TH=90+VecCol[vecNum].TH;
+                VecCol[vecNum].TH=-VecCol[vecNum].TH;  //ceshi dedao
                 vecNum++;
                 return 1;
             }
@@ -356,6 +381,7 @@ int checkOthers(CvSeq *contours)
                 VecCol[vecNum].TH=90-VecCol[vecNum].TH;
             else
                 VecCol[vecNum].TH=90+VecCol[vecNum].TH;
+            VecCol[vecNum].TH=-VecCol[vecNum].TH;  //ceshi dedao
             vecNum++;
             return 1;
         }else{

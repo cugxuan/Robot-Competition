@@ -22,7 +22,7 @@ extern struct Countour{
     int ID[2];
     int X,Y,S;
     double TH;   //识别物体朝向角
-}VecCol[15];
+}VecCol[20];
 extern int vecNum;    //检测到的物体的个数
 extern double areaS;  //轮廓的面积
 //-------变量定义--------
@@ -131,9 +131,9 @@ void dfs(int x,int y,int watch[3],int depth)
     for(int i=0;i<3;i++)
         watchi[i] = originMat.at<Vec3b>(y, x)[i];
 
-//    cout<<x<<":"<<y<<endl<<"0:"<<watch[0]<<"  1:"<<watch[1]<<"  2:"<<watch[2]<<endl;
-//    cvSetReal2D(thrImg, y, x, 255.0);
-//    cvShowImage("colorJudge", thrImg);
+    cout<<x<<":"<<y<<endl<<"0:"<<watch[0]<<"  1:"<<watch[1]<<"  2:"<<watch[2]<<endl;
+    cvSetReal2D(thrImg, y, x, 255.0);
+    cvShowImage("colorJudge", thrImg);
 //    cvWaitKey();
 
     //进行判断,对watch值进行比较
@@ -146,7 +146,7 @@ void dfs(int x,int y,int watch[3],int depth)
     {
         int dx=x+dir[i][0];
         int dy=y+dir[i][1];
-        if(check(dx,dy)&&depth<11&&!vis[dy][dx]){
+        if(check(dx,dy)&&depth<9&&!vis[dy][dx]){
             vis[dy][dx]=1;
             dfs(dx,dy,watchi,depth+1);
         }
@@ -170,6 +170,7 @@ int isColorPure(int x,int y,int depth)
 
     vis[y][x]=1;
     dfs(x,y,watchi,depth);
+//    cvWaitKey();
     if(mix==1){
         return -1;
     }else{

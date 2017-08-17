@@ -14,6 +14,7 @@ using namespace cv;
 
 extern int vecNum;
 struct Countour{
+
     //圆形、正方形、长方形、椭圆形4种（ID依次为1, 2, 3, 4）
     //可乐罐、口香糖、方便桶面、饼干盒4种（ID依次为81, 82, 83, 84）
     //黑、红、黄、绿、蓝5种（ID依次为1, 2, 3, 4, 5）
@@ -21,7 +22,7 @@ struct Countour{
     int X,Y,S;
     double TH;   //识别物体朝向角
 };
-extern Countour VecCol[15];
+extern Countour VecCol[20];
 extern IplImage* originImg;
 extern Mat originMat;
 extern void Gau();
@@ -132,7 +133,8 @@ void MainWindow::on_get_clicked()
 #if 1//read in capture
     cap>>frame;// 从摄像头中抓取并返回每一帧
 #else
-    frame=imread("/home/xuan/qt/piture/frame0.jpg");
+//    frame=imread("/home/xuan/qt/piture/normal/3.jpg");
+    frame=imread("/home/xuan/qt/piture/8.jpg");
 //    frame=imread("/frame1.jpg");
 #endif
     imwrite("frame0.jpg",frame);
@@ -144,7 +146,7 @@ void MainWindow::on_get_clicked()
     //
     Mat dst;
     double alpha =1.4;
-    double beta = 40;
+    double beta = 35;
 
     dst = Mat::zeros(originMat.size(),originMat.type());
     for (int i = 0;i<originMat.rows;++i)
@@ -215,6 +217,12 @@ void MainWindow::test()
     double temp;
     for(int i=0;i<vecNum;i++)
     {
+        char str[4];
+        str[0]=VecCol[i].ID[0]+'0';
+        str[1]=VecCol[i].ID[1]+'0';
+        str[2]=i+'a';
+//        cout<<str<<endl;
+        putText(originMat,str,cvPoint(VecCol[i].X,VecCol[i].Y),1,1,CV_RGB(0,0,0));
         if(VecCol[vecNum].TH==-90.0)
             VecCol[vecNum].TH=90;
         QString  id,x,y,th,s;
@@ -235,6 +243,7 @@ void MainWindow::test()
         ui->textEdit->append(s);
         ui->textEdit->append("\n");
     }
+    imshow("number",originMat);
     cvWaitKey();
 }
 

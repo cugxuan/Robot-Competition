@@ -34,15 +34,5 @@ tags:
 7. []()
 8. []()
 
-参考代码,,寻找方法
-```C++
-//需要获取的坐标  
-CvPoint2D32f rectpoint[4];   
-CvBox2D End_Rage2D = cvMinAreaRect2(pFirstSeq); //寻找包围矩形，获取角度  
 
-cvBoxPoints(End_Rage2D, rectpoint); //获取4个顶点坐标  
-//与水平线的角度  
-float angle = End_Rage2D.angle;
-//然后判断angle
-
-```
+8.16 Competition
