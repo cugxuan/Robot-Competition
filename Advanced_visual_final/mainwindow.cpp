@@ -133,8 +133,8 @@ void MainWindow::on_get_clicked()
 #if 1//read in capture
     cap>>frame;// 从摄像头中抓取并返回每一帧
 #else
-//    frame=imread("/home/xuan/qt/piture/normal/3.jpg");
-    frame=imread("/home/xuan/qt/piture/8.jpg");
+    frame=imread("/home/xuan/qt/piture/normal/3.jpg");
+//    frame=imread("/home/xuan/qt/piture/8.jpg");
 //    frame=imread("/frame1.jpg");
 #endif
     imwrite("frame0.jpg",frame);
